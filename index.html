@@ -1,0 +1,3863 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة QDU للاختبار التفاعلي</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #111827;
+            --text-muted: #4B5563;
+            --border-color: #E5E7EB;
+            --correct-bg: #D1FAE5;
+            --correct-border: #10B981;
+            --correct-text: #065F46;
+            --wrong-bg: #FEE2E2;
+            --wrong-border: #EF4444;
+            --wrong-text: #991B1B;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --option-hover: #EEF2FF;
+        }
+
+        [data-theme="dark"] {
+            --primary: #6366F1;
+            --primary-hover: #818CF8;
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --border-color: #334155;
+            --correct-bg: #064E3B;
+            --correct-text: #34D399;
+            --wrong-bg: #7F1D1D;
+            --wrong-text: #F87171;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --option-hover: #334155;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* Navbar */
+        nav {
+            background-color: var(--card-bg);
+            padding: 15px 5%;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 900;
+        }
+
+        .brand p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-icon {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex-grow: 1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Lecture Cards */
+        .lectures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .lecture-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .lecture-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .lecture-card .emoji {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .lecture-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+        }
+
+        .lecture-card p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Quiz Section */
+        .quiz-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-color);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .question-translation {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: var(--option-hover);
+            border-radius: 10px;
+            display: none;
+            border-right: 4px solid var(--primary);
+        }
+
+        .tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            justify-content: flex-end;
+        }
+
+        .tool-btn {
+            background: var(--bg-color);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: var(--text-main);
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Options */
+        .options-grid {
+            display: grid;
+            gap: 15px;
+            direction: ltr;
+        }
+
+        .option {
+            background: var(--bg-color);
+            border: 2px solid var(--border-color);
+            padding: 15px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option:hover {
+            background: var(--option-hover);
+            border-color: var(--primary);
+        }
+
+        .option .letter {
+            background: var(--primary);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            z-index: 2;
+        }
+        
+        .option .opt-text {
+            flex-grow: 1;
+            z-index: 2;
+        }
+
+        .option.correct {
+            background: var(--correct-bg);
+            border-color: var(--correct-border);
+            color: var(--correct-text);
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .option.wrong {
+            background: var(--wrong-bg);
+            border-color: var(--wrong-border);
+            color: var(--wrong-text);
+            animation: shake 0.4s ease-in-out;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+        
+        .option.correct::after {
+            content: '\f058';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--correct-text);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .option.wrong::after {
+            content: '\f057';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--wrong-text);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Explanation Box */
+        .explanation {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 12px;
+            background: var(--wrong-bg);
+            color: var(--wrong-text);
+            display: none;
+            border-right: 4px solid var(--wrong-border);
+            animation: fadeIn 0.3s;
+        }
+
+        .next-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            display: none;
+            transition: var(--transition);
+        }
+
+        .next-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Result Section */
+        .result-section {
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) 0%, var(--bg-color) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 130px;
+            height: 130px;
+            background: var(--card-bg);
+            border-radius: 50%;
+        }
+
+        .score-text {
+            position: relative;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .stat-card h4 {
+            margin: 0 0 10px 0;
+            color: var(--text-muted);
+        }
+
+        .stat-card p {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            font-family: 'Tajawal', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .primary-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--bg-color);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Review Section */
+        .review-section {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .review-item {
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-q {
+            font-family: 'Outfit', sans-serif;
+            direction: ltr;
+            text-align: left;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .review-ans {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .review-ans.correct {
+            color: #10B981;
+        }
+
+        .review-ans.wrong {
+            color: #EF4444;
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tools {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body id="body" class="no-select">
+
+    <nav>
+        <div class="brand">
+            <h1>منصة QDU</h1>
+            <p>التصوير الشعاعي | مقتدى الكناني</p>
+        </div>
+        <div class="controls">
+            <button class="btn-icon" onclick="toggleTheme()" title="تغيير المظهر"><i class="fas fa-moon"></i></button>
+            <button class="btn-icon" onclick="toggleFullScreen()" title="ملء الشاشة"><i
+                    class="fas fa-expand"></i></button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="home-screen">
+            <h2 style="text-align: center; margin-bottom: 30px;">اختر المحاضرة للاختبار</h2>
+            <div class="lectures-grid">
+                <div class="lecture-card" onclick="startQuiz('lec1')">
+                    <div class="emoji">☢️</div>
+                    <h3>Radiographic Quality</h3>
+                    <p>محاضرة 1</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec2')">
+                    <div class="emoji">👍</div>
+                    <h3>Thumb & Finger</h3>
+                    <p>محاضرة 2</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec3')">
+                    <div class="emoji">✋</div>
+                    <h3>Hand</h3>
+                    <p>محاضرة 3</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec4')">
+                    <div class="emoji">🦴</div>
+                    <h3>Scaphoid</h3>
+                    <p>محاضرة 4</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec5')">
+                    <div class="emoji">⌚</div>
+                    <h3>Wrist</h3>
+                    <p>محاضرة 5</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec6')">
+                    <div class="emoji">💪🏻</div>
+                    <h3>Forearm</h3>
+                    <p>محاضرة 6</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec7')">
+                    <div class="emoji">🦾</div>
+                    <h3>Humerus</h3>
+                    <p>محاضرة 7</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec8')">
+                    <div class="emoji">🩻</div>
+                    <h3>Shoulder</h3>
+                    <p>محاضرة 8</p>
+                </div>
+                <div class="lecture-card" onclick="startQuiz('lec10')">
+                    <div class="emoji">⭐</div>
+                    <h3>الأسئلة المرشحة</h3>
+                    <p>محاضرة 10</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="quiz-section">
+            <div class="quiz-header">
+                <span id="question-counter" style="font-weight: bold; color: var(--primary);">السؤال 1 / 30</span>
+                <span style="color: var(--text-muted);"><i class="fas fa-clock"></i> تفاعلي</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress"></div>
+            </div>
+
+            <div class="tools">
+                <button class="tool-btn" id="hint-btn" onclick="useHint()"><i class="fas fa-lightbulb"></i> تلميح (<span id="hint-count">3</span>)</button>
+                <button class="tool-btn" onclick="readQuestion()"><i class="fas fa-volume-up"></i> استماع</button>
+                <button class="tool-btn" onclick="toggleTranslation()"><i class="fas fa-language"></i> ترجمة</button>
+            </div>
+
+            <div class="question-container">
+                <div id="q-text" class="question-text">Question Text</div>
+                <div id="q-trans" class="question-translation">نص الترجمة</div>
+
+                <div id="options-container" class="options-grid">
+                    <!-- Options populated via JS -->
+                </div>
+
+                <div id="explanation" class="explanation">
+                    <i class="fas fa-info-circle"></i> <span id="exp-text">الشرح هنا</span>
+                </div>
+
+                <button id="next-btn" class="next-btn" onclick="handleNextClick()">التالي <i
+                        class="fas fa-arrow-left"></i></button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="result-section">
+            <div id="result-card" style="background: var(--card-bg); padding: 30px; border-radius: 20px;">
+                <h2 style="margin-bottom: 30px;">اكتمل الاختبار!</h2>
+
+                <div class="score-circle" id="score-circle">
+                    <div class="score-text" id="score-text">100%</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>الأسئلة</h4>
+                        <p id="total-q">30</p>
+                    </div>
+                    <div class="stat-card" style="border-bottom: 4px solid #10B981;">
+                        <h4>صحيح</h4>
+                        <p id="correct-q" style="color: #10B981;">25</p>
+                    </div>
+                    <div class="stat-card" style="border-bottom: 4px solid #EF4444;">
+                        <h4>خطأ</h4>
+                        <p id="wrong-q" style="color: #EF4444;">5</p>
+                    </div>
+                </div>
+
+                <div id="mistakes-container" style="display: none; margin-bottom: 30px; text-align: right; background: var(--wrong-bg); padding: 20px; border-radius: 15px; border: 2px solid var(--wrong-border);">
+                    <h3 style="color: var(--wrong-text); margin-top: 0; margin-bottom: 15px;"><i class="fas fa-exclamation-triangle"></i> أبرز الأخطاء:</h3>
+                    <ul id="mistakes-list" style="margin: 0; padding-right: 20px; color: var(--text-main); font-family: 'Outfit', sans-serif;">
+                    </ul>
+                </div>
+
+                <div class="result-actions" data-html2canvas-ignore>
+                    <button class="action-btn primary-btn" onclick="showReview()"><i class="fas fa-list-check"></i>
+                        مراجعة الإجابات</button>
+                    <button class="action-btn secondary-btn" onclick="shareResult()"><i class="fas fa-share-nodes"></i>
+                        مشاركة النتيجة</button>
+                    <button class="action-btn secondary-btn" onclick="resetApp()"><i class="fas fa-house"></i>
+                        الرئيسية</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Screen -->
+        <div id="review-screen" class="review-section">
+            <h2>مراجعة الاجابات</h2>
+            <div id="review-container"></div>
+            <button class="action-btn primary-btn" style="margin-top:20px; width:100%; justify-content:center;"
+                onclick="resetApp()">العودة للرئيسية <i class="fas fa-home"></i></button>
+        </div>
+
+    </div>
+
+    <!-- Data & Script -->
+    <script>
+        const questionsDB = {
+            lec1: [
+                {
+                    q: "Characteristics of radiographic quality include:",
+                    trans: "مميزات جودة الصورة الشعاعية تتضمن:",
+                    options: ["Spatial resolution", "Contrast resolution", "Noise and Artifacts", "All of them"],
+                    answer: 3,
+                    exp: "حبيبي، كل هذي الخيارات (الدقة المكانية، دقة التباين، التشويش والشوائب) هي من الخصائص اللي تحدد جودة الصورة الشعاعية، فـ الجواب اكيد هو كل ما سبق."
+                },
+                {
+                    q: ".......... is the ability to image small structures that have high subject contrast.",
+                    trans: "........ هي القدرة على تصوير التراكيب الصغيرة اللي بيها تباين عالي.",
+                    options: ["Contrast resolution", "Spatial resolution", "Noise", "Brightness"],
+                    answer: 1,
+                    exp: "الدقة المكانية (Spatial resolution) هي المسؤولة عن قدرة الجهاز على اظهار التراكيب الصغيرة والناعمة بوضوح."
+                },
+                {
+                    q: "Spatial resolution in radiology refers to the ability of the imaging modality to differentiate two objects.",
+                    trans: "الدقة المكانية بالاشعة تشير لقدرة جهاز التصوير على التمييز بين كائنين.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "اي نعم صح، هذا هو التعريف الحرفي والاساسي للدقة المكانية، انه الجهاز يكدر يفرزن بين شغلتين متقاربات."
+                },
+                {
+                    q: ".......... is the ability to distinguish structures with similar subject contrast.",
+                    trans: "........ هي القدرة على التمييز بين التراكيب اللي تباينها متقارب.",
+                    options: ["Spatial resolution", "Noise", "Contrast resolution", "Artifacts"],
+                    answer: 2,
+                    exp: "من اسمها (تباين متقارب) يعني نحتاج (دقة التباين - Contrast resolution) حتى نكدر نفرق بين الانسجة المتقاربة مثل الكبد والطحال مثلاً."
+                },
+                {
+                    q: "Computed tomography and MRI have excellent contrast resolution, while conventional radiology is:",
+                    trans: "المفراس (CT) والرنين (MRI) عدهم دقة تباين ممتازة، بينما الاشعة التقليدية تكون:",
+                    options: ["Excellent", "Fair to poor", "Superior", "Perfect"],
+                    answer: 1,
+                    exp: "الاشعة العادية زينة للعظام، بس للانسجة دقة التباين مالتها تعتبر مقبولة الى ضعيفة (Fair to poor) مقارنة بالمفراس والرنين."
+                },
+                {
+                    q: "MRI has poor contrast resolution compared to conventional radiology.",
+                    trans: "الرنين المغناطيسي دقة التباين مالته ضعيفة مقارنة بالاشعة التقليدية.",
+                    options: ["True", "False"],
+                    answer: 1,
+                    exp: "لا غلط! الرنين يعتبر من افضل الاجهزة بدقة التباين للانسجة الرخوة، يتفوق بهواية على الاشعة العادية."
+                },
+                {
+                    q: "Noise is defined as:",
+                    trans: "يعرف التشويش (Noise) بأنه:",
+                    options: ["An increase in spatial resolution", "An undesirable fluctuation in optical density of the image", "A desired change in brightness", "The clarity of anatomical structures"],
+                    answer: 1,
+                    exp: "التشويش هو تذبذب او تغير غير مرغوب بي بالكثافة البصرية للصورة، يخرب علينا تفاصيل الصورة."
+                },
+                {
+                    q: "The two major types of noise are:",
+                    trans: "النوعين الرئيسيين للتشويش هما:",
+                    options: ["Spatial resolution and contrast resolution", "Film graininess and scatter radiation", "Brightness and artifacts", "KVp and SID"],
+                    answer: 1,
+                    exp: "اهم نوعين يسوون تشويش بالصورة هما حبيبات الفلم (Film graininess) والاشعة المتشتتة (Scatter radiation)."
+                },
+                {
+                    q: "Scatter radiation is a type of noise.",
+                    trans: "الاشعة المتشتتة هي نوع من انواع التشويش.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "اي صح حبيبي، الاشعة المتشتتة تخلي الصورة مغوشة وتعتبر من اهم اسباب التشويش."
+                },
+                {
+                    q: "Resolution and noise are intimately connected with:",
+                    trans: "الدقة والتشويش مرتبطات بشكل وثيق ويا:",
+                    options: ["KVp", "Speed", "SID", "Grid"],
+                    answer: 1,
+                    exp: "الدقة والتشويش مرتبطات بسرعة الفلم او النظام (Speed). النظام السريع ينطي تشويش اكثر ودقة اقل، والبطيء بالعكس."
+                },
+                {
+                    q: "Radiographic contrast is the combined result of:",
+                    trans: "التباين الشعاعي هو نتيجة دمج بين:",
+                    options: ["Image receptor contrast and subject contrast", "Noise and artifacts", "Brightness and spatial resolution", "Film speed and KVp only"],
+                    answer: 0,
+                    exp: "التباين الكلي للصورة ينتج من دمج تباين مستقبل الصورة (الفلم او الديجيتال) ويا تباين المريض نفسه (Subject contrast)."
+                },
+                {
+                    q: "Image receptor contrast refers to the contrast inherent in the film and is influenced by processing of the film.",
+                    trans: "تباين مستقبل الصورة يشير للتباين الموجود اصلاً بالفلم ويتأثر بعملية تحميض الفلم.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "مضبوط، تباين المستقبل (الفلم) يعتمد على خصائص تصنيع الفلم وطريقة تحميضه."
+                },
+                {
+                    q: "Subject contrast is determined by all of the following EXCEPT:",
+                    trans: "تباين المريض (Subject contrast) يتحدد بكل العوامل التالية عدا:",
+                    options: ["Size and shape of the subject", "X-ray attenuating characteristics", "Energy (KVp) of the x-ray beam", "The color of the patient's skin"],
+                    answer: 3,
+                    exp: "مؤكد لون بشرة المريض ماله اي علاقة لا من قريب ولا من بعيد بتباين الاشعة."
+                },
+                {
+                    q: ".......... is the intensity of light representing individual pixels in image.",
+                    trans: "........ هو شدة الضوء اللي يمثل كل بكسل بالصورة.",
+                    options: ["Noise", "Contrast", "Brightness", "Spatial resolution"],
+                    answer: 2,
+                    exp: "السطوع (Brightness) هو التعبير عن شدة الضاءة بكل بكسل بالصورة الرقمية."
+                },
+                {
+                    q: "Changes in brightness will not affect image quality.",
+                    trans: "تغييرات السطوع ما تأثر على جودة الصورة.",
+                    options: ["True", "False"],
+                    answer: 1,
+                    exp: "غلط طبعاً. اذا الصورة صارت كلش فاتحة او كلش غامقة بسبب السطوع، تفاصيل الصورة راح تضيع والجودة تقل."
+                },
+                {
+                    q: "When brightness is too high, the image will become:",
+                    trans: "لمن السطوع يكون عالي جداً، الصورة راح تصير:",
+                    options: ["Very dark with high detail", "Chalky white and detail is lost", "Clear with sharp edges", "Normal with improved contrast"],
+                    answer: 1,
+                    exp: "اذا السطوع عالي، الصورة تصير بيضة مثل الطباشير (Chalky white) والتفاصيل تختفي بيها."
+                },
+                {
+                    q: "The three main factors of image quality are:",
+                    trans: "العوامل الرئيسية الثلاثة لجودة الصورة هي:",
+                    options: ["Film factors, geometric factors, subject factors", "KVp, mA, SID", "Noise, brightness, artifacts", "Speed, contrast, resolution"],
+                    answer: 0,
+                    exp: "حسب التقسيم الاساسي، جودة الصورة تعتمد على عوامل الفلم، العوامل الهندسية، وعوامل المريض (Subject factors)."
+                },
+                {
+                    q: "Geometric factors of image quality include magnification and distortion.",
+                    trans: "العوامل الهندسية لجودة الصورة تتضمن التكبير والتشويه.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "صح حبيبي، التكبير (Magnification) والتشويه (Distortion) وعدم الحدية هي عوامل هندسية (Geometric)."
+                },
+                {
+                    q: ".......... is the most important influence on subject contrast.",
+                    trans: "........ هو اهم عامل يأثر على تباين المريض (Subject contrast).",
+                    options: ["mA", "SID", "KVp", "Grid"],
+                    answer: 2,
+                    exp: "الـ KVp (الكيلوفولت) هو العامل الاساسي والمتحكم الاول بتباين اختراق الانسجة (Subject contrast)."
+                },
+                {
+                    q: "All of the following are subject factors EXCEPT:",
+                    trans: "كل العوامل التالية هي من عوامل المريض (Subject factors) عدا:",
+                    options: ["Subject contrast", "Patient thickness", "Kilovolt peak", "Film processing time"],
+                    answer: 3,
+                    exp: "وقت تحميض الفلم (Film processing time) يعتبر من عوامل الفلم (Film factors) مو عوامل المريض."
+                },
+                {
+                    q: "Tissue mass density is one of the subject factors that affects image quality.",
+                    trans: "كثافة كتلة النسيج هي وحدة من عوامل المريض اللي تأثر على جودة الصورة.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "صح، كثافة النسيج (Tissue mass density) مثل العظم يختلف عن العضلة هي من اهم عوامل المريض."
+                },
+                {
+                    q: "Subject factors that affect radiographic quality include all of the following EXCEPT:",
+                    trans: "عوامل المريض اللي تأثر على جودة الصورة تتضمن كل ما يلي عدا:",
+                    options: ["Subject contrast", "Patient thickness", "Objective shape", "Source to image distance (SID)"],
+                    answer: 3,
+                    exp: "المسافة بين المصدر والصورة (SID) تعتبر من العوامل الهندسية (Geometric) مو عوامل المريض."
+                },
+                {
+                    q: "To control scatter radiation, we use:",
+                    trans: "للسيطرة على الاشعة المتشتتة، نستخدم:",
+                    options: ["Restricting x-ray beam (collimation)", "Radiographic grid", "Increasing patient thickness", "A and B only"],
+                    answer: 3,
+                    exp: "نستخدم تضييق الحزمة (Collimation) حتى نقلل انتاجها، ونستخدم الكريد (Grid) حتى نمنعها توصل للفلم، فـ A و B صحيحات."
+                },
+                {
+                    q: "Collimation means restricting the x-ray beam to control scatter radiation.",
+                    trans: "الـ Collimation تعني تضييق حزمة الاشعة للسيطرة على الاشعة المتشتتة.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "اي نعم، هذا هو تعريف الـ Collimation فائدته الاساسية يقلل تشتت الاشعة ويحمي المريض."
+                },
+                {
+                    q: "The radiographic grid is used to:",
+                    trans: "يستخدم الكريد (Grid) الشعاعي لـ:",
+                    options: ["Increase patient dose", "Control scatter radiation", "Increase image brightness only", "Reduce spatial resolution"],
+                    answer: 1,
+                    exp: "وظيفة الكريد (Grid) الاساسية يمتص الاشعة المتشتتة قبل لا توصل للفلم، حتى يزيد التباين."
+                },
+                {
+                    q: "Before uploading an image for teaching purposes, appropriate window/level/contrast/brightness must be ensured.",
+                    trans: "قبل رفع صورة لأغراض تعليمية، لازم نتأكد من ضبط النافذة/المستوى/التباين/السطوع المناسب.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "اكيد صح، الصورة التعليمية لازم تكون مثالية وواضحة جداً فـ لازم تتعدل اعداداتها بشكل تام."
+                },
+                {
+                    q: "Film graininess is a type of:",
+                    trans: "حبيبات الفلم هي نوع من:",
+                    options: ["Spatial resolution", "Contrast resolution", "Noise", "Brightness"],
+                    answer: 2,
+                    exp: "حبيبات الفلم (Film graininess) تعتبر وحدة من المسببات الرئيسية للتشويش (Noise) بالصورة."
+                },
+                {
+                    q: "All statements about noise are true EXCEPT:",
+                    trans: "كل العبارات عن التشويش صحيحة عدا:",
+                    options: ["It is an undesirable fluctuation in optical density", "Film graininess is a type of noise", "Scatter radiation is a type of noise", "Noise improves image quality"],
+                    answer: 3,
+                    exp: "مستحيل التشويش يحسن الجودة! التشويش دائماً هو شي سلبي يقلل من جودة ووضوح الصورة."
+                },
+                {
+                    q: "The imaging modality with the best contrast resolution is:",
+                    trans: "جهاز التصوير اللي بي افضل دقة تباين هو:",
+                    options: ["Conventional radiology", "Fluoroscopy", "CT and MRI", "Plain X-ray"],
+                    answer: 2,
+                    exp: "المفراس (CT) والرنين (MRI) هما ملوك دقة التباين (Contrast resolution) ويكدرون يوضحون اقل فرق بالانسجة."
+                },
+                {
+                    q: ".......... refers to the contrast inherent in the film and influenced by the processing of the film.",
+                    trans: "........ يشير للتباين الموجود اصلاً بالفلم ويتأثر بعملية تحميض الفلم.",
+                    options: ["Subject contrast", "Image receptor contrast", "Noise", "Spatial resolution"],
+                    answer: 1,
+                    exp: "تباين مستقبل الصورة (Image receptor contrast) هو اللي يعتمد على نوع الفلم وطريقة تحميضه."
+                },
+                {
+                    q: "KVp affects subject contrast but not image receptor contrast.",
+                    trans: "الـ KVp يأثر على تباين المريض بس ما يأثر على تباين مستقبل الصورة.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "صح حبيبي، الـ KVp خاص باختراق انسجة المريض فـ يأثر بس على تباين المريض (Subject contrast)."
+                },
+                {
+                    q: "All statements about radiographic quality are true EXCEPT:",
+                    trans: "كل العبارات عن جودة الصورة الشعاعية صحيحة عدا:",
+                    options: ["Spatial resolution differentiates two objects", "KVp is the most important factor affecting subject contrast", "Noise is a desirable fluctuation in optical density", "Contrast resolution distinguishes structures with similar subject contrast"],
+                    answer: 2,
+                    exp: "التشويش (Noise) هو تذبذب (غير مرغوب بي - Undesirable) مو مرغوب! فهاذي العبارة خاطئة."
+                },
+                {
+                    q: "Characteristics of radiographic quality are spatial resolution, contrast resolution, noise, and artifacts.",
+                    trans: "مميزات جودة الصورة الشعاعية هي الدقة المكانية، دقة التباين، التشويش، والشوائب.",
+                    options: ["True", "False"],
+                    answer: 0,
+                    exp: "صح تماماً، هاي هي المكونات الاربعة الاساسية اللي نستخدمها لتقييم جودة الصوة الشعاعية."
+                },
+                {
+                    q: "The main purpose of radiographic quality is to:",
+                    trans: "الغرض الرئيسي من جودة الصورة الشعاعية هو:",
+                    options: ["Reduce radiation dose to the patient", "Image anatomical structures on the film with high fidelity", "Increase the speed of image processing", "Decrease the cost of imaging"],
+                    answer: 1,
+                    exp: "الهدف الاساسي من الجودة العالية هو تمثيل التراكيب التشريحية للمريض على الفلم باعلى دقة واقرب للواقع (High fidelity)."
+                },
+                {
+                    q: "Subject contrast is NOT affected by:",
+                    trans: "تباين المريض لا يتأثر بـ:",
+                    options: ["Size of the subject", "Shape of the subject", "KVp of the x-ray beam", "The film processing temperature"],
+                    answer: 3,
+                    exp: "درجة حرارة التحميض (processing temperature) تأثر على الفلم مو على تباين المريض (جسم المريض)."
+                },
+                {
+                    q: "Which of the following the type of noise?",
+                    trans: "اي من التالي يعتبر من انواع التشويش؟",
+                    options: ["Film graininess – scatter radiation", "Scatter radiation – film graininess", "Film graininess – a type of noise", "Artifacts – a type of contrast resolution"],
+                    answer: 0,
+                    exp: "حبيبات الفلم والاشعة المتشتتة هي الانواع الاساسية للتشويش المذكورة بالمحاضرة."
+                }
+            ],
+            lec2: [
+                {
+                    "q": "The .......... view is an excellent view to inspect shafts of the metacarpal.",
+                    "trans": "الوضعية ....... ممتازة حتى نفحص بيها جسم العظم المشطي (shafts of the metacarpal).",
+                    "options": [
+                        "Lateral",
+                        "Oblique",
+                        "AP/PA",
+                        "Axial"
+                    ],
+                    "answer": 2,
+                    "exp": "وضعية الـ AP/PA (الامامي/الخلفي) هي الافضل حتى نشوف ديافيسيس (جسم) العظم المشطي بوضوح."
+                },
+                {
+                    "q": "The oblique view of the thumb is:",
+                    "trans": "الوضعية المائلة (oblique) للابهام تعتبر:",
+                    "options": [
+                        "Internal oblique projection",
+                        "External oblique projection",
+                        "Lateral oblique projection",
+                        "Axial oblique projection"
+                    ],
+                    "answer": 1,
+                    "exp": "الوضعية المائلة للابهام بالاساس تعتبر دوران خارجي (External oblique projection) مو داخلي."
+                },
+                {
+                    "q": "The lateral view of the thumb is essential to examine:",
+                    "trans": "الوضعية الجانبية (lateral) للابهام كلش ضرورية حتى نفحص:",
+                    "options": [
+                        "Shafts of the metacarpal",
+                        "Joint spaces",
+                        "Soft tissue only",
+                        "The carpal bones"
+                    ],
+                    "answer": 1,
+                    "exp": "الوضعية الجانبية مال الابهام نستخدمها بشكل اساسي حتى نتأكد من مسافات المفاصل (Joint spaces) اذا بيها مشكلة او خلع."
+                },
+                
+                {
+                    "q": "The standard projections for the finger series (Hand) include all of the following EXCEPT:",
+                    "trans": "الوضعيات القياسية (Series) للاصابع تتضمن كل ما يلي عدا:",
+                    "options": [
+                        "PA view",
+                        "Oblique view",
+                        "Lateral view",
+                        "Axial view"
+                    ],
+                    "answer": 3,
+                    "exp": "الوضعية المحورية (Axial) ما نستخدمها بشكل قياسي للاصابع، بينما الـ PA والمائلة والجانبية هن الأساسيات."
+                },
+                
+                {
+                    "q": "The AP/PA view of the thumb is excellent to inspect:",
+                    "trans": "وضعية الـ AP/PA للابهام ممتازة حتى نفحص:",
+                    "options": [
+                        "Joint spaces",
+                        "Soft tissue",
+                        "Shafts of the metacarpal",
+                        "Carpal bones"
+                    ],
+                    "answer": 2,
+                    "exp": "مثل ما قلنا قبل شوية، الـ AP/PA كلش ممتازة حتى تفحص وتشوف جسم العظم المشطي."
+                },
+                
+                {
+                    "q": "The .......... view of the thumb is used as an external oblique projection.",
+                    "trans": "الوضعية ...... للابهام تستخدم كوضعية مائلة خارجية.",
+                    "options": [
+                        "AP",
+                        "Lateral",
+                        "Oblique",
+                        "PA"
+                    ],
+                    "answer": 2,
+                    "exp": "هي الوضعية المائلة (Oblique view) بطبيعة وضع اليد تعتبر مائلة خارجية للابهام."
+                },
+                
+                
+                {
+                    "q": "Which view of the thumb demonstrates the first metacarpal in the natural anatomical position?",
+                    "trans": "اي وضعية للابهام تظهر العظم المشطي الاول بوضعيته التشريحية الطبيعية؟",
+                    "options": [
+                        "Lateral view",
+                        "Oblique view",
+                        "AP/PA view",
+                        "Axial view"
+                    ],
+                    "answer": 2,
+                    "exp": "هي وضعية الـ AP/PA اللي تخلي العظم ينشاف بصورته التشريحية الطبيعية بدون استدارة."
+                },
+                {
+                    "q": "The .......... view is the essential view to examine joint spaces of the thumb.",
+                    "trans": "الوضعية ....... هي الوضعية الاساسية لفحص مسافات المفاصل بالابهام.",
+                    "options": [
+                        "AP",
+                        "PA",
+                        "Oblique",
+                        "Lateral"
+                    ],
+                    "answer": 3,
+                    "exp": "الوضع الجانبي (Lateral) هو اهم وضعية نكدر نقيم بيها المسافات داخل المفصل بشكل دقيق."
+                },
+               
+                {
+                    "q": "The oblique view of the thumb is an external oblique projection.",
+                    "trans": "الوضعية المائلة للابهام هي وضعية مائلة خارجية.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح طبعاً، هذا الشي ثابت ان الاوبليك مال الابهام يكون External."
+                }
+            ],
+            lec3: [
+                {
+                    "q": "The hand position primarily examines all of the following EXCEPT:",
+                    "trans": "تصوير اليد يفحص بشكل اساسي كل التالي عدا:",
+                    "options": [
+                        "Radiocarpal joint",
+                        "Distal radioulnar joint",
+                        "Metacarpals and phalanges",
+                        "clavicle and scapula"
+                    ],
+                    "answer": 3,
+                    "exp": "اكيد عظم الترقوة (Clavicle) ولوح الكتف (Scapula) ما نكدر نشوفهم بتصوير اليد، مكانهم فوگ بالكتف."
+                },
+                {
+                    "q": "In PA view of the hand, the forearm is:",
+                    "trans": "بوضعية الـ PA لليد، الساعد (forearm) يكون:",
+                    "options": [
+                        "Supinated",
+                        "Pronated",
+                        "Neutral",
+                        "Elevated"
+                    ],
+                    "answer": 1,
+                    "exp": "بوضعية الـ PA الكف يكون مكفي للاسفل، فـ هاي الحركة نسميها (Pronated) يعني الساعد مقلوب."
+                },
+                {
+                    "q": "In PA view of the hand, the palmer surface of the hand is in contact with the film.",
+                    "trans": "بوضعية PA لليد، سطح راحة اليد (palmer surface) يكون ملامس للفلم.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "اي صح، لان هي Posterior-Anterior فالاشعة تدخل من ظهر الايد والفلم جوه راحة الايد."
+                },
+                {
+                    "q": "In PA view of the hand, the fingers are:",
+                    "trans": "بوضعية PA لليد، الاصابع تكون:",
+                    "options": [
+                        "Flexed and together",
+                        "Extended and separated but relaxed",
+                        "Flexed and separated",
+                        "Extended and tightly together"
+                    ],
+                    "answer": 1,
+                    "exp": "الافضل ان الاصابع تكون ممدودة ومفرقة شوية بس مرتاحة (relaxed) حتى ما يصير تراكب بين العظام."
+                },
+                {
+                    "q": "The centering point for PA view of the hand is:",
+                    "trans": "نقطة السنترة (Center) بوضعية PA لليد هي:",
+                    "options": [
+                        "Second metacarpal head",
+                        "Third metacarpal head",
+                        "First metacarpal head",
+                        "Mid carpal"
+                    ],
+                    "answer": 1,
+                    "exp": "دائماً السنتر يكون على رأس العظم المشطي الثالث (في منتصف اليد تقريباً)."
+                },
+                {
+                    "q": "The detector size for PA view, lateral view and oblique view of the hand is:",
+                    "trans": "حجم الكاسيت (detector) لوضعيات الـ PA، الجانبي، والمائل لليد هو:",
+                    "options": [
+                        "24 cm x 30 cm",
+                        "18 cm x 24 cm",
+                        "35 cm x 43 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 1,
+                    "exp": "القياس القياسي لتصوير اليد هو 18 بـ 24 سم (او 24 بـ 30)، بس الجواب المعتمد هنا هو 18x24."
+                },
+                {
+                    "q": "The KVp range for PA view, lateral view and oblique view of the hand is:",
+                    "trans": "مدى الـ KVp المستخدم لوضعيات الـ PA والجانبي والمائل لليد هو:",
+                    "options": [
+                        "40-45 KVp",
+                        "70-80 KVp",
+                        "50-60 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 2,
+                    "exp": "عظام اليد رقيقة فما نحتاج KVp عالي، 50 الى 60 كيلو فولت كلش كافي لاختراقها."
+                },
+                {
+                    "q": "The mAs range for PA view, lateral view and oblique view of the hand is:",
+                    "trans": "ضوابط الـ mAs لوضعيات الـ PA والجانبية والمائلة لليد هي:",
+                    "options": [
+                        "10-20 mAs",
+                        "1-5 mAs",
+                        "5-10 mAs",
+                        "20-30 mAs"
+                    ],
+                    "answer": 1,
+                    "exp": "نحتاج كمية اشعة قليلة كلش لليد، فـ نستعمل بس (1 الى 5 mAs)."
+                },
+                {
+                    "q": "The SID for PA view, lateral view and oblique view of the hand is:",
+                    "trans": "المسافة بين التيوب والفلم (SID) بتصوير اليد هي:",
+                    "options": [
+                        "150 cm",
+                        "180 cm",
+                        "100 cm",
+                        "75 cm"
+                    ],
+                    "answer": 2,
+                    "exp": "المسافة الاستاندرد (القياسية) لكل فحوصات الاطراف تقريباً هي 100 سم."
+                },
+                {
+                    "q": "A grid is used in PA view, lateral view and oblique view of the hand.",
+                    "trans": "نستخدم Grid بوضعيات اليد الـ PA، الجانبية، والمائلة.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 1,
+                    "exp": "لا غلط! الكريد نستخدمه للاشياء السميكة اللي تنتج اشعة متشتتة هواي، اليد نسيجها رقيق فما نحتاج الكريد."
+                },
+                
+                {
+                    "q": "The reason the hand and elbow should be at shoulder height in PA view is:",
+                    "trans": "السبب ان اليد والمرفق لازم يكونون بمستوى الكتف هو:",
+                    "options": [
+                        "To make the carpals visible",
+                        "To make radius and ulna parallel",
+                        "To reduce patient dose",
+                        "To improve brightness"
+                    ],
+                    "answer": 1,
+                    "exp": "حتى تصير عظمة الكعبرة (Radius) والزند (Ulna) متوازيات وما يتقاطعن."
+                },
+                
+                {
+                    "q": "A sand bag is placed over the lower forearm in PA hand view for:",
+                    "trans": "كيس الرمل نخليه فوگ الساعد السفلي بتصوير اليد علمود:",
+                    "options": [
+                        "Radiation protection",
+                        "Immobilization",
+                        "Compression",
+                        "Elevation"
+                    ],
+                    "answer": 1,
+                    "exp": "نخليه حتى المريض يثبت ايده وما يتحرك (Immobilization) وتطلع الصورة واضحة بدون ارتجاج."
+                },
+                
+                {
+                    "q": "Collimation in PA hand view should distally include:",
+                    "trans": "التحديد الشعاعي بالـ PA من الجهة البعيدة (الاصابع) لازم يتضمن:",
+                    "options": [
+                        "Mid phalanges",
+                        "Proximal phalanges",
+                        "Tips of the distal phalanges",
+                        "Metacarpal heads only"
+                    ],
+                    "answer": 2,
+                    "exp": "لازم الفيلد يوصل لآخر شي باطراف الاصابع (الرؤوس مال السلاميات البعيدة)."
+                },
+                
+                {
+                    "q": "The hand is not a technically challenging radiograph.",
+                    "trans": "تصوير اليد ما يعتبر فحص صعب تقنياً.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، تصوير اليد فحص بسيط وسهل وما بي تعقيدات هواية."
+                },
+                {
+                    "q": "In PA hand view, the fingers should be equal distance apart.",
+                    "trans": "بوضعية PA لليد، الاصابع لازم تكون متباعدة بمسافات متساوية.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لازم نفرق الاصابع بمسافات زينة حتى ما تتراكب العظام ونشوف المفاصل زين."
+                },
+               
+                {
+                    "q": "In lateral view of the hand, the hand is rotated externally by:",
+                    "trans": "بالوضعية الجانبية (Lateral) لليد، اليد نفترها خارجياً بزاوية:",
+                    "options": [
+                        "45 degrees from PA position",
+                        "90 degrees from PA position",
+                        "30 degrees from PA position",
+                        "60 degrees from PA position"
+                    ],
+                    "answer": 1,
+                    "exp": "حتى تصير وضعية جانبية حقيقية، لازم اليد تستدار 90 درجة بالكامل من وضع الـ PA."
+                },
+                {
+                    "q": "In lateral view of the hand, the palm is .......... to the image receptor.",
+                    "trans": "بوضعية lateral لليد، راحة اليد (palm) تكون ....... على مستقبل الصورة.",
+                    "options": [
+                        "Parallel",
+                        "Perpendicular",
+                        "At 45 degrees",
+                        "Facing upward"
+                    ],
+                    "answer": 1,
+                    "exp": "راحة اليد تكون عمودية (Perpendicular) على الفلم لان الايد واكفة على جانبها."
+                },
+                {
+                    "q": "In lateral hand view, the fingers are kept extended with thumb:",
+                    "trans": "بوضعية lateral، الاصابع تكون ممدودة والابهام يكون:",
+                    "options": [
+                        "Adducted",
+                        "Flexed",
+                        "Abducted",
+                        "Neutral"
+                    ],
+                    "answer": 2,
+                    "exp": "الابهام لازم نرفعه ونبعده (Abducted) حتى ما يغطي على باقي عظام اليد بالصورة."
+                },
+               
+                {
+                    "q": "The centering point for lateral view of the hand is:",
+                    "trans": "السنتر بوضعية الجانبي لليد يكون:",
+                    "options": [
+                        "Third metacarpal head",
+                        "First metacarpal head",
+                        "Over Second metacarpal head",
+                        "Mid carpal"
+                    ],
+                    "answer": 2,
+                    "exp": "السنتر يصير فوگ رأس العظم المشطي الثاني (جهة السبابة)."
+                },
+                {
+                    "q": "Collimation in lateral hand view should proximally include:",
+                    "trans": "التحديد الشعاعي بالـ lateral من الجهة القريبة لازم يشمل:",
+                    "options": [
+                        "Two-thirds of the distal radius and ulna",
+                        "One-third of the distal radius and ulna",
+                        "The elbow joint",
+                        "The entire forearm"
+                    ],
+                    "answer": 1,
+                    "exp": "لازم نطلع الثلث السفلي (البعيد) من عظمي الكعبرة والزند."
+                },
+                
+                {
+                    "q": "In lateral hand view, correct positioning is evidenced by open interphalangeal joint spaces.",
+                    "trans": "بالوضعية الجانبية للايد، نتأكد ان الوضعية صحيحة لمن تكون مسافات المفاصل بين السلاميات مفتوحة.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح تماماً، اذا المفاصل بين السلاميات واضحة ومفتوحة يعني ايد المريض ممائلة ومركزة صح."
+                },
+                
+                
+                {
+                    "q": "Lower KVp is used in lateral hand view to:",
+                    "trans": "نستخدم KVp ناصي (عكس العادي) بالوضعية الجانبية علمود:",
+                    "options": [
+                        "Reduce patient dose",
+                        "Detect foreign body in the soft tissue",
+                        "Improve spatial resolution",
+                        "Increase image brightness"
+                    ],
+                    "answer": 1,
+                    "exp": "الـ KVp القليل يخلينا نشوف الانسجة الرخوة زين حتى نكتشف اذا اكو جسم غريب (شظية او زجاج) بيها."
+                },
+               
+                {
+                    "q": "In oblique view of the hand, the hand is rotated externally by:",
+                    "trans": "بالوضعية المائلة لليد، الايد نفترها خارجياً بزاوية:",
+                    "options": [
+                        "90 degrees from PA position",
+                        "30 degrees from PA position",
+                        "45 degrees from PA position",
+                        "60 degrees from PA position"
+                    ],
+                    "answer": 2,
+                    "exp": "الوضعية المائلة دائماً تكون بزاوية 45 درجة من وضعية الـ PA."
+                },
+                {
+                    "q": "In oblique view of the hand, the fingers are kept in:",
+                    "trans": "بالوضعية المائلة لليد، الاصابع نخليها بوضعية:",
+                    "options": [
+                        "Flexion",
+                        "Extension",
+                        "Abduction",
+                        "Adduction"
+                    ],
+                    "answer": 1,
+                    "exp": "الاصابع لازم تكون ممدودة (Extension) ومفرقة وما نخليها مثنية."
+                },
+                {
+                    "q": "In oblique hand view, the fingers are parallel to the image receptor.",
+                    "trans": "بالوضعية المائلة، الاصابع تكون متوازية ويه مستقبل الصورة.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لازم نسندها بأسفنجة بزاوية 45 حتى تبقى الاصابع متوازية ومعدلة وما تتشوه صورتها."
+                },
+                {
+                    "q": "The centering point for oblique view of the hand is:",
+                    "trans": "نقطة السنترة (Center) للوضعية المائلة لليد هي:",
+                    "options": [
+                        "Third metacarpal head",
+                        "First metacarpal head",
+                        "Second metacarpal head",
+                        "Mid carpal"
+                    ],
+                    "answer": 2,
+                    "exp": "نسنتر مثل الجانبي، اللي هو رأس العظم المشطي الثاني."
+                },
+                
+                {
+                    "q": "All of the following are indications for hand radiography EXCEPT:",
+                    "trans": "تصوير اليد يوصف لكل الحالات التالية عدا:",
+                    "options": [
+                        "Trauma with suspected fracture",
+                        "Suspected metacarpal dislocation",
+                        "Foreign body detection",
+                        "Chest pain assessment"
+                    ],
+                    "answer": 3,
+                    "exp": "مبينة، الم الصدر (Chest pain) نسويله اشعة للصدر مو اشعة لليد!"
+                },
+               
+               
+                
+                {
+                    "q": "All statements about PA hand view are true EXCEPT:",
+                    "trans": "كل العبارات عن الـ PA لليد صحيحة عدا:",
+                    "options": [
+                        "Forearm is pronated",
+                        "Fingers are separated and extended",
+                        "SID is 100 cm",
+                        "A grid is used"
+                    ],
+                    "answer": 3,
+                    "exp": "الكريد (Grid) ما نستخدمه بتصوير الاطراف الرفيعة مثل اليد."
+                },
+                
+               
+                {
+                    "q": "All statements about oblique hand view are true EXCEPT:",
+                    "trans": "كل العبارات عن الوضعية المائلة لليد صحيحة عدا:",
+                    "options": [
+                        "Hand is rotated externally by 45 degrees from PA position",
+                        "Fingers are kept in extension",
+                        "SID is 100 cm",
+                        "Hand is rotated internally by 45 degrees from PA position"
+                    ],
+                    "answer": 3,
+                    "exp": "الدوران يكون لبرة (External) مو لداخل (Internal)."
+                },
+                
+                {
+                    "q": "All of the following statements about collimation in PA hand view are true EXCEPT:",
+                    "trans": "كل العبارات عن التحديد (Collimation) بالـ PA اليد صحيحة عدا:",
+                    "options": [
+                        "Proximally includes distal radioulnar joint",
+                        "Distally includes tips of distal phalanges",
+                        "Laterally to the skin margins",
+                        "Proximally includes the elbow joint"
+                    ],
+                    "answer": 3,
+                    "exp": "ما نحتاج نطلع مفصل المرفق (elbow) بتصوير اليد! بس المفصل الرسغي والساعد السفلي."
+                },
+                {
+                    "q": "All statements about hand radiography technical factors are true EXCEPT:",
+                    "trans": "كل العبارات عن العوامل التقنية لتصوير اليد صحيحة عدا:",
+                    "options": [
+                        "KVp range is 50-60",
+                        "SID is 100 cm",
+                        "Grid is not used",
+                        "mAs range is 20-30"
+                    ],
+                    "answer": 3,
+                    "exp": "الـ mAs بالايد ما يوصل لـ 20-30 ابداً! احنه نستخدم اشعة قليلة جداً من 1 الى 5 mAs."
+                }
+            ],
+            lec4: [
+                {
+                    "q": "All of the following are indications for scaphoid series EXCEPT:",
+                    "trans": "كل الامور التالية هي اسباب حتى نطلب سلسلة صور للزورقي (scaphoid) عدا:",
+                    "options": [
+                        "Wrist trauma",
+                        "Bony tenderness at the anatomical snuffbox",
+                        "Suspected fracture",
+                        "Suspected lung pathology"
+                    ],
+                    "answer": 3,
+                    "exp": "اكيد امراض الرئة (lung pathology) مالتها علاقة بالرسغ أو العظم الزورقي! هذا نفحصه بأشعة الصدر."
+                },
+                {
+                    "q": "Bony tenderness at the anatomical snuffbox is an indication for scaphoid series.",
+                    "trans": "الام او المضض العظمي بمنطقة (anatomical snuffbox) هو من الاسباب لطلب اشعة للعظم الزورقي.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، هذا اهم مؤشر سريري انه احتمال اكو كسر بالعظم الزورقي (Scaphoid)."
+                },
+                {
+                    "q": "The standard projections for scaphoid series include all of the following EXCEPT:",
+                    "trans": "الوضعيات القياسية لسلسلة العظم الزورقي تتضمن كل التالي عدا:",
+                    "options": [
+                        "PA view",
+                        "PA view angled",
+                        "Lateral view",
+                        "Axial view"
+                    ],
+                    "answer": 3,
+                    "exp": "الوضعية المحورية (Axial view) ما نستخدمها بالوضعيات القياسية للزورقي."
+                },
+                {
+                    "q": "In PA view of the scaphoid, .......... deviation is used to remove the scaphoid from the radius.",
+                    "trans": "بوضعية الـ PA للزورقي، نستخدم انحراف (deviation) باتجاه الـ ....... حتى نبعد الزورقي عن الكعبرة.",
+                    "options": [
+                        "Radial",
+                        "Ulnar",
+                        "Palmar",
+                        "Dorsal"
+                    ],
+                    "answer": 1,
+                    "exp": "نسوي (Ulnar deviation) يعني نحرف الايد لجهة الزند حتى العظم الزورقي ينطط ويطلع من جوه الكعبرة."
+                },
+                {
+                    "q": "The purpose of ulnar deviation in PA view of the scaphoid is:",
+                    "trans": "الغرض من الانحراف الزندي (ulnar deviation) بوضعية الـ PA للزورقي هو:",
+                    "options": [
+                        "To overlap the carpal bones",
+                        "To remove the scaphoid from the radius and present its axis longitudinally",
+                        "To demonstrate the distal phalanges",
+                        "To reduce patient dose"
+                    ],
+                    "answer": 1,
+                    "exp": "حتى نطلع الزورقي من جوا عظم الكعبرة ونشوف محوره الطولي بشكل كامل وواضح."
+                },
+                {
+                    "q": "The PA view of the scaphoid is the best view to inspect the joint spaces of the carpal bones.",
+                    "trans": "وضعية PA للزورقي هي افضل وضعية لفحص مسافات المفاصل لعظام الرسغ.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "اي نعم، لان الايد تكون مسطحة فـ المسافات بين عظام الرسغ تظهر بشكل واضح ومفتوح."
+                },
+                {
+                    "q": "The PA view of the scaphoid is the best view to inspect:",
+                    "trans": "وضعية PA للزورقي هي الافضل حتى نفحص:",
+                    "options": [
+                        "Alignment of radius, lunate, and capitate",
+                        "Joint spaces of the carpal bones and the distal radio-ulnar joint",
+                        "Soft tissue only",
+                        "Phalanges and metacarpals"
+                    ],
+                    "answer": 1,
+                    "exp": "هي الافضل حتى نشوف مسافات مفاصل عظام الرسغ والمفصل الكعبري الزندي السفلي بوضوح."
+                },
+               
+                {
+                    "q": "The lateral view of the scaphoid is a projection .......... to the PA view.",
+                    "trans": "الوضعية الجانبية (lateral view) للزورقي هي مسقط بزاوية ....... للوضعية PA.",
+                    "options": [
+                        "45°",
+                        "60°",
+                        "90°",
+                        "30°"
+                    ],
+                    "answer": 2,
+                    "exp": "الجانبي دائماً يكون بزاوية 90 درجة عن الـ PA (يعني عمودي عليه)."
+                },
+                
+                {
+                    "q": "The .......... view is the essential view to assess the alignment of the radius, lunate, and capitate in the setting of a suspected dislocation.",
+                    "trans": "الوضعية ....... هي الاساسية لتقييم محاذاة الكعبرة والهلالي والكبير بحالات الخلع.",
+                    "options": [
+                        "PA view",
+                        "PA angled view",
+                        "Lateral view",
+                        "Oblique view"
+                    ],
+                    "answer": 2,
+                    "exp": "الوضع الجانبي (Lateral) هو اللي يخلينا نشوفهم مصطفات واحد فوگ الثاني ونكتشف اذا اكو خلع بيهم."
+                },
+                {
+                    "q": "The lateral view of the scaphoid is essential to assess:",
+                    "trans": "الوضعية الجانبية للزورقي ضرورية جداً لتقييم:",
+                    "options": [
+                        "Joint spaces of the carpal bones",
+                        "The scaphoid axis longitudinally",
+                        "Alignment of the radius, lunate, and capitate",
+                        "The distal radio-ulnar joint only"
+                    ],
+                    "answer": 2,
+                    "exp": "مثل ما ذكرنا، الجانبية تفيدنا حتى نشوف اصطفاف الكعبرة (radius) والعظم الهلالي (lunate) والعظم الكبير (capitate)."
+                },
+               
+                
+                {
+                    "q": "Which view of the scaphoid uses tube angulation?",
+                    "trans": "اي وضعية للزورقي نستخدم بيها تمييل لأنبوبة الاشعة (tube angulation)؟",
+                    "options": [
+                        "PA view",
+                        "PA angled view",
+                        "Lateral view",
+                        "Oblique view"
+                    ],
+                    "answer": 1,
+                    "exp": "هي من اسمها PA angled view يعني وضعية PA مزواة (فيها تمييل لتيوب الاشعة عادة 10-15 درجة)."
+                },
+               
+            ],
+            lec5: [
+                {
+                    "q": "In PA view of the wrist, the patient is seated alongside the table.",
+                    "trans": "بوضعية PA للرسغ، المريض يجلس بجانب الطاولة.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، الوضع الطبيعي بتصوير الاطراف العليا ان المريض يكعد بصف السدية ويمد ايده عليها."
+                },
+                {
+                    "q": "In PA view of the wrist, the palm, wrist, and lower forearm should be placed in:",
+                    "trans": "بوضعية PA للرسغ، راحة اليد والرسغ والساعد السفلي لازم ينحطون بـ:",
+                    "options": [
+                        "A curved position",
+                        "A straight line on the film",
+                        "A flexed position",
+                        "An elevated position"
+                    ],
+                    "answer": 1,
+                    "exp": "لازم يكونون بخط مستقيم (straight line) على الفلم حتى ما يصير دوران او التواء بالصورة."
+                },
+                {
+                    "q": "In PA view of the wrist, the shoulder joint should be at the same height as the forearm.",
+                    "trans": "بوضعية PA للرسغ، مفصل الكتف لازم يكون بنفس ارتفاع الساعد.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لازم المريض ينزل كتفه بمستوى الطاولة حتى الكعبرة والزند يكونون بخط متوازي وما يتقاطعون."
+                },
+                {
+                    "q": "In PA view of the wrist, the fingers are:",
+                    "trans": "بوضعية PA للرسغ، الاصابع تكون:",
+                    "options": [
+                        "Fully extended",
+                        "Tightly closed",
+                        "Slightly flexed",
+                        "Abducted"
+                    ],
+                    "answer": 2,
+                    "exp": "الاصابع لازم تكون مثنية شوية (Slightly flexed) مثل قبضة رخوة حتى الرسغ يلامس الفلم بالكامل بدون تجويف."
+                },
+               
+                {
+                    "q": "The centering point for PA view of the wrist is:",
+                    "trans": "نقطة السنتر بوضعية PA للرسغ هي:",
+                    "options": [
+                        "Third metacarpal head",
+                        "Second metacarpal head",
+                        "Mid carpal region",
+                        "Distal radius"
+                    ],
+                    "answer": 2,
+                    "exp": "السنتر يكون بالضبط بنص عظام الرسغ (Mid carpal region) بين النتوءات الابَرية (Styloid processes)."
+                },
+                {
+                    "q": "The KVp range for PA view and lateral view of the wrist is:",
+                    "trans": "مدى الـ KVp بوضعيات الرسغ هو:",
+                    "options": [
+                        "40-45 KVp",
+                        "70-80 KVp",
+                        "50-60 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 2,
+                    "exp": "نفس اليد، الرسغ تركيبه رقيق فنستخدم KVp قليل بين 50 لـ 60."
+                },
+                {
+                    "q": "The mAs range for PA view and lateral view of the wrist is:",
+                    "trans": "ضوابط الـ mAs بوضعيات الرسغ هي:",
+                    "options": [
+                        "1-3 mAs",
+                        "3-5 mAs",
+                        "10-15 mAs",
+                        "20-25 mAs"
+                    ],
+                    "answer": 1,
+                    "exp": "نحتاج كمية اشعة قليلة، فـ (3 الى 5 mAs) تكون كافية جداً لإعطاء صورة ممتازة لرسغ اليد."
+                },
+                {
+                    "q": "The SID for PA view and lateral view of the wrist is:",
+                    "trans": "المسافة (SID) بوضعيات الرسغ هي:",
+                    "options": [
+                        "75 cm",
+                        "150 cm",
+                        "100 cm",
+                        "180 cm"
+                    ],
+                    "answer": 2,
+                    "exp": "ثابتة لكل الاطراف العلوية تقريباً وهي 100 سم."
+                },
+                {
+                    "q": "A grid is used in PA view and lateral view of the wrist.",
+                    "trans": "نستخدم Grid بوضعيات الرسغ.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 1,
+                    "exp": "لا طبعاً، الرسغ منطقة نحيفة وما تفرز اشعة متشتتة قوية فما نحتاج الكريد."
+                },
+                {
+                    "q": "The detector size for PA view and lateral view of the wrist is:",
+                    "trans": "حجم الفلم (detector size) بوضعيات الرسغ هو:",
+                    "options": [
+                        "24 cm x 30 cm",
+                        "35 cm x 43 cm",
+                        "18 cm x 24 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 2,
+                    "exp": "الحجم القياسي للأطراف الرفيعة مثل اليد والرسغ هو 18 بـ 24 سم."
+                },
+                {
+                    "q": "Collimation in PA wrist view should proximally include:",
+                    "trans": "التحديد الشعاعي بالـ PA من الجهة القريبة (الساعد) لازم يتضمن:",
+                    "options": [
+                        "One-third of the distal radius and ulna",
+                        "One-quarter of the distal radius and ulna",
+                        "The entire radius and ulna",
+                        "The elbow joint"
+                    ],
+                    "answer": 1,
+                    "exp": "لازم نفتح الفيلد بحيث نغطي الربع السفلي من عظمي الكعبرة والزند."
+                },
+                
+               
+                {
+                    "q": "In lateral view of the wrist, the hand, wrist and forearm should be:",
+                    "trans": "بالوضعية الجانبية للرسغ، اليد والرسغ والساعد لازم يكونون:",
+                    "options": [
+                        "Flexed",
+                        "Extended",
+                        "Pronated",
+                        "Elevated"
+                    ],
+                    "answer": 1,
+                    "exp": "لازم يكونون ممدودين (Extended) تماماً بوضع مستقيم مثل المسطرة."
+                },
+                {
+                    "q": "In lateral wrist view, the forearm is rotated into lateral position by:",
+                    "trans": "بالوضعية الجانبية للرسغ، يتم فر الساعد للجانب عن طريق:",
+                    "options": [
+                        "Internal rotation of hand",
+                        "External rotation of hand",
+                        "Pronation of hand",
+                        "Flexion of hand"
+                    ],
+                    "answer": 1,
+                    "exp": "عن طريق تدوير الايد للخارج (External rotation) بـ 90 درجة من وضعية الـ PA."
+                },
+                {
+                    "q": "In lateral view of the wrist, the .......... finger, medial aspect of hand and lower forearm are rested in a straight line on the film.",
+                    "trans": "بالجانبي للرسغ، الاصبع الـ ...... والجانب الانسي لليد والساعد السفلي راح يقرّون بخط مستقيم عالفلم.",
+                    "options": [
+                        "1st",
+                        "2nd",
+                        "3rd",
+                        "5th"
+                    ],
+                    "answer": 3,
+                    "exp": "الاصبع الخامس (الخنصر - 5th) هو اللي راح يكون ملامس للفلم، هو وحافة الايد من يم الخنصر."
+                },
+                
+                {
+                    "q": "In lateral wrist view, the back of the hand is supported by a pad.",
+                    "trans": "بالجانبي للرسغ، ظهر اليد لازم ينسند باسفنجة (pad).",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، نسند ظهر الايد حتى الايد ما تتحرك وتبقى ثابتة بزاوية 90 طول وقت التعريض."
+                },
+                {
+                    "q": "The centering point for lateral view of the wrist is:",
+                    "trans": "السنتر بالوضعية الجانبية للرسغ يكون:",
+                    "options": [
+                        "Second metacarpal head",
+                        "Third metacarpal head",
+                        "Mid carpal region",
+                        "Distal radius"
+                    ],
+                    "answer": 2,
+                    "exp": "نفس سنتر الـ PA، اللي هو منطقة منتصف عظام الرسغ (Mid carpal)."
+                },
+                {
+                    "q": "The centering point is the same for both PA and lateral views of the wrist.",
+                    "trans": "نقطة السنتر هي نفسها لوضعيتي الرسغ الأمامية والجانبية.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، السنتر بالـ Mid carpal ثابت بالـ PA وبالـ Lateral."
+                },
+                
+                {
+                    "q": "Collimation in lateral wrist view should proximally include:",
+                    "trans": "التحديد الجانبي للرسغ من الجهة القريبة لازم يشمل:",
+                    "options": [
+                        "One-third of the distal radius and ulna",
+                        "One-quarter of the distal radius and ulna",
+                        "The entire forearm",
+                        "The elbow joint"
+                    ],
+                    "answer": 1,
+                    "exp": "نفس الـ PA، نطلع ويانا الربع السفلي من عظمي الكعبرة والزند."
+                },
+               
+                {
+                    "q": "All statements about PA wrist view are true EXCEPT:",
+                    "trans": "كل العبارات عن الـ PA للرسغ صحيحة عدا:",
+                    "options": [
+                        "Patient is seated alongside the table",
+                        "Centering point is mid carpal region",
+                        "Fingers are slightly flexed",
+                        "A grid is used"
+                    ],
+                    "answer": 3,
+                    "exp": "مثل ما اتفقنا، الكريد (Grid) ما نستخدمه للرسغ."
+                },
+                
+               
+                
+            ],
+            lec6: [
+                
+                {
+                    "q": "The forearm AP view is used to assess the radius and ulna.",
+                    "trans": "تستخدم وضعية الـ AP للساعد لتقييم عظم الكعبرة (radius) والزند (ulna).",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح طبعاً، الساعد يتكون من ذني العظمتين، فالتصوير هدفه الاساسي يشوفهم."
+                },
+                {
+                    "q": "All of the following are indications for forearm AP view EXCEPT:",
+                    "trans": "كل التالي يعتبر من دواعي تصوير الساعد AP عدا:",
+                    "options": [
+                        "Assessment of suspected dislocations",
+                        "Assessment of suspected fractures",
+                        "Localizing foreign bodies within the forearm",
+                        "Assessment of shoulder joint"
+                    ],
+                    "answer": 3,
+                    "exp": "مستحيل نقيم مفصل الكتف (shoulder) عن طريق اشعة الساعد! الكتف اله اشعة وتوجيهات خاصة."
+                },
+                {
+                    "q": "The forearm AP view demonstrates the elbow joint in its natural anatomical position.",
+                    "trans": "الـ AP للساعد يبين مفصل المرفق (elbow) بوضعيته التشريحية الطبيعية.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لان بهاي الوضعية الساعد يكون Supinated يعني الايد ومفصل المرفق ينفتحون بوضعهم الطبيعي."
+                },
+                {
+                    "q": "In AP view of the forearm, the patient is seated alongside the table.",
+                    "trans": "بالـ AP للساعد، المريض يجلس بجانب الطاولة.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "اي نعم، مثل كل تصوير الاطراف العلوية المريض يكعد بصف الطاولة ويمد ايده عليها."
+                },
+                {
+                    "q": "In AP view of the forearm, the forearm is:",
+                    "trans": "بالـ AP للساعد، الساعد يكون بوضعية:",
+                    "options": [
+                        "Pronated",
+                        "Supinated",
+                        "Laterally rotated",
+                        "Flexed"
+                    ],
+                    "answer": 1,
+                    "exp": "الايد لازم تكون (Supinated) يعني باطن الكف متجه للاعلى، حتى الكعبرة والزند ما يتقاطعن."
+                },
+               
+                {
+                    "q": "In AP view of the forearm, the elbow joint is:",
+                    "trans": "بالـ AP للساعد، مفصل المرفق يكون:",
+                    "options": [
+                        "Flexed",
+                        "Rotated",
+                        "Extended",
+                        "Hyperextended"
+                    ],
+                    "answer": 2,
+                    "exp": "لازم يكون ممدود ومفتوح بالكامل (Extended) مو مثني."
+                },
+                {
+                    "q": "In AP forearm view, both elbow joint and wrist joints are kept in contact with the cassette.",
+                    "trans": "بالـ AP للساعد، كلا مفصلي المرفق والرسغ يكونن ملامسات للكاسيت.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لان لازم اثنينهم يطلعون بالصورة، فـ نضغطهم اثنينهم على الكاسيت."
+                },
+                
+                {
+                    "q": "In image technical evaluation of AP forearm view, .......... and capitulum are seen in profile.",
+                    "trans": "بالتقييم التقني لصورة الـ AP للساعد، الـ ....... والـ capitulum يبينون بشكل جانبي (in profile).",
+                    "options": [
+                        "Radial head",
+                        "Trochlea",
+                        "Olecranon",
+                        "Coronoid process"
+                    ],
+                    "answer": 1,
+                    "exp": "التركيبة اللي تبين بشكل واضح تماماً بالـ AP هي البكرة (Trochlea) والرؤيس (Capitulum) بمفصل المرفق."
+                },
+                {
+                    "q": "In AP forearm image evaluation, the wrist should be in AP position.",
+                    "trans": "بتقييم صورة الـ AP للساعد، الرسغ لازم يكون بوضعية AP.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، الرسغ لازم يكون مفتوح على شكل AP حتى نتأكد ان المريض مسوة Supination صحيحة."
+                },
+                
+               
+                {
+                    "q": "In lateral view of the forearm, the elbow is flexed to:",
+                    "trans": "بالوضعية الجانبية للساعد، المرفق نثنيه بزاوية:",
+                    "options": [
+                        "45 degrees",
+                        "60 degrees",
+                        "90 degrees",
+                        "120 degrees"
+                    ],
+                    "answer": 2,
+                    "exp": "المرفق دائماً نثنيه 90 درجة بالـ Lateral للساعد والمرفق."
+                },
+                
+                {
+                    "q": "The centering point for both AP and lateral views of the forearm is:",
+                    "trans": "السنتر بالـ AP والجانبي للساعد هو:",
+                    "options": [
+                        "Proximal forearm",
+                        "Distal forearm",
+                        "Mid forearm region",
+                        "Elbow joint"
+                    ],
+                    "answer": 2,
+                    "exp": "دائماً السنتر يكون بمنتصف منطقة الساعد (Mid forearm)."
+                },
+                {
+                    "q": "Collimation in forearm views should distally include:",
+                    "trans": "التحديد (Collimation) للساعد من الجهة البعيدة لازم يضمن:",
+                    "options": [
+                        "Mid forearm only",
+                        "The wrist joint",
+                        "Tips of the fingers",
+                        "Metacarpal heads"
+                    ],
+                    "answer": 1,
+                    "exp": "القاعدة بالساعد ان نطلع مفصل الرسغ بالكامل (Wrist joint)."
+                },
+                {
+                    "q": "Collimation in forearm views should proximally include:",
+                    "trans": "التحديد للساعد من الجهة القريبة لازم يضمن:",
+                    "options": [
+                        "Shoulder joint",
+                        "Mid forearm",
+                        "Elbow joint",
+                        "Distal radius only"
+                    ],
+                    "answer": 2,
+                    "exp": "ومن فوگ لازم نطلع ويا الفيلد مفصل المرفق (Elbow joint) بالكامل، حتى ينشافن المفاصل الاثنين بالصورة."
+                },
+                {
+                    "q": "The detector size for forearm views is:",
+                    "trans": "حجم الفلم (detector size) بتصوير الساعد هو:",
+                    "options": [
+                        "18 cm x 24 cm",
+                        "24 cm x 30 cm",
+                        "35 cm x 43 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 1,
+                    "exp": "الساعد طويل، فـ نستخدم كاسيت كبير شوية قياس 24 بـ 30 سم وممكن نقسمه نصين."
+                },
+                {
+                    "q": "The KVp range for forearm views is:",
+                    "trans": "مدى الـ KVp لتصوير الساعد هو:",
+                    "options": [
+                        "40-45 KVp",
+                        "70-80 KVp",
+                        "50-60 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 2,
+                    "exp": "مثل الايد والرسغ، الساعد ما يحتاج اختراق عالي، فـ نطيه KVp بين 50 لـ 60."
+                },
+                {
+                    "q": "The mAs range for forearm views is:",
+                    "trans": "مدى الـ mAs لتصوير الساعد هو:",
+                    "options": [
+                        "1-3 mAs",
+                        "10-15 mAs",
+                        "3-5 mAs",
+                        "20-25 mAs"
+                    ],
+                    "answer": 2,
+                    "exp": "ايضاً جرعة قليلة مثل الرسغ (3 الى 5 mAs) تنطينا تباين ممتاز."
+                },
+                {
+                    "q": "The SID for forearm views is:",
+                    "trans": "المسافة (SID) لتصوير الساعد هي:",
+                    "options": [
+                        "75 cm",
+                        "150 cm",
+                        "100 cm",
+                        "180 cm"
+                    ],
+                    "answer": 2,
+                    "exp": "100 سم هي المسافة الثابتة الاستاندرد لمعظم فحوصات الاطراف."
+                },
+                {
+                    "q": "A grid is used in forearm views.",
+                    "trans": "نستخدم Grid بتصوير الساعد.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 1,
+                    "exp": "لا اكيد، الساعد ما يولد اشعة متشتتة قوية فما نحتاج الكريد ابداً."
+                },
+                {
+                    "q": "In lateral forearm image evaluation, there should be superimposition of the distal radius and ulna.",
+                    "trans": "بتقييم صورة الجانبي للساعد، لازم يكون اكو تراكب (superimposition) بين الكعبرة والزند بالسفل.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لمن الايد مدورة 90 درجة، راح يتراكبن عظام الكعبرة والزند يم الرسغ."
+                },
+                {
+                    "q": "Forearm fractures occur in the forearm following:",
+                    "trans": "كسور الساعد تصير عادة بعد:",
+                    "options": [
+                        "Infection",
+                        "Trauma",
+                        "Inflammation",
+                        "Overuse"
+                    ],
+                    "answer": 1,
+                    "exp": "الكسور تصير دائماً نتيجة للصدمات والحوادث (Trauma)."
+                },
+                {
+                    "q": "The radius and ulna are bound together at the proximal and distal radioulnar joints and act as a:",
+                    "trans": "الكعبرة والزند يرتبطن وي بعض بمفاصل فوق وجوة ويعملون مثل:",
+                    "options": [
+                        "Hinge",
+                        "Ring",
+                        "Lever",
+                        "Pivot"
+                    ],
+                    "answer": 1,
+                    "exp": "يعملون مثل الحلقة المفرغة (Ring) لانهم متصلين من الطرفين ومفصولين من النص."
+                },
+                {
+                    "q": "If the radius or ulna is fractured, it is likely there is another fracture or one of the radioulnar joints has been damaged.",
+                    "trans": "اذا انكسر الزند او الكعبرة، غالباً اكو كسر ثاني او ضرر بالمفاصل بينهم.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لان هم حلقة (Ring)، اذا انكسر مكان فغالباً راح يطق المكان الثاني او ينخلع."
+                },
+                {
+                    "q": "Forearm fractures are readily diagnosed on:",
+                    "trans": "كسور الساعد يتم تشخيصها بسهولة عن طريق:",
+                    "options": [
+                        "MRI only",
+                        "CT only",
+                        "Plain radiographs",
+                        "Ultrasound only"
+                    ],
+                    "answer": 2,
+                    "exp": "الاشعة العادية (Plain radiographs) هي الاساس بتشخيص كسور الاطراف."
+                },
+                {
+                    "q": "In plain radiograph of forearm fractures, .......... and lateral X-rays are performed.",
+                    "trans": "بالاشعة العادية لكسور الساعد، نسوي اشعة جانبية و .......",
+                    "options": [
+                        "Oblique",
+                        "AP",
+                        "Axial",
+                        "Tangential"
+                    ],
+                    "answer": 1,
+                    "exp": "الوضعيات الاساسية هنا الـ AP والجانبي (Lateral)."
+                },
+                {
+                    "q": "A radial or ulnar fracture will be visible on at least one view.",
+                    "trans": "كسر الكعبرة او الزند راح يبين بوضوح بوحدة من الوضعيات على الاقل.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، اذا ما بين بالـ AP راح يبين بالجانبي او العكس."
+                },
+               
+                {
+                    "q": "It is important to determine the type of forearm fracture such as transverse, oblique, or comminuted.",
+                    "trans": "ضروري نحدد نوع الكسر بالساعد مثل كسر مستعرض، مائل، او متهشم.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، تقرير الاشعة لازم يحدد نوع الكسر بدقة حتى الدكتور يعرف شلون يعالجه."
+                },
+                {
+                    "q": "Monteggia fracture-dislocation involves:",
+                    "trans": "كسر-وخلع نوع مونتياجيا (Monteggia) يتضمن:",
+                    "options": [
+                        "Radial fracture and dislocation of the distal ulna",
+                        "Ulna fracture and dislocation of the radial head at the elbow",
+                        "Both radius and ulna fracture without dislocation",
+                        "Radial fracture and dislocation of the proximal ulna"
+                    ],
+                    "answer": 1,
+                    "exp": "يتضمن كسر بعظم الزند (Ulna) وينخلع وياه رأس الكعبرة (Radial head) من يم المرفق."
+                },
+                {
+                    "q": "Galeazzi fracture-dislocation involves:",
+                    "trans": "كسر-وخلع نوع كالياتزي (Galeazzi) يتضمن:",
+                    "options": [
+                        "Ulna fracture and dislocation of the radial head",
+                        "Both radius and ulna fracture",
+                        "Radial fracture and dislocation of the distal ulna from the carpus",
+                        "Ulna fracture and dislocation of the distal radius"
+                    ],
+                    "answer": 2,
+                    "exp": "هذا بالعكس، يصير كسر بالكعبرة (Radius) وينخلع عظم الزند من جهة الرسغ جوا."
+                },
+                {
+                    "q": "In Monteggia fracture-dislocation, the dislocation occurs at:",
+                    "trans": "بكسر مونتياجيا، الخلع يصير بيمفصل:",
+                    "options": [
+                        "Wrist joint",
+                        "Distal radioulnar joint",
+                        "Elbow joint",
+                        "Carpus"
+                    ],
+                    "answer": 2,
+                    "exp": "الخلع يصير فوگ يم المرفق (Elbow joint) لرأس الكعبرة."
+                },
+                {
+                    "q": "In Galeazzi fracture-dislocation, the fractured bone is:",
+                    "trans": "بكسر كالياتزي، العظم المكسور هو:",
+                    "options": [
+                        "Ulna",
+                        "Radius",
+                        "Both radius and ulna",
+                        "Humerus"
+                    ],
+                    "answer": 2,
+                    "exp": "حسب الجواب المعتمد هنا، يعتبرون كسر كالياتزي يتضمن الكعبرة والزند (بس علمياً هو غالباً الكعبرة والخلع بالزند). احنه نلتزم بالجواب."
+                },
+               
+            ],
+            lec7: [
+                {
+                    "q": "The AP view of the humerus is usually taken in .......... position.",
+                    "trans": "وضعية الـ AP للعضد (Humerus) غالباً تتأخذ بوضعية:",
+                    "options": [
+                        "Supine",
+                        "Prone",
+                        "Standing",
+                        "Lateral decubitus"
+                    ],
+                    "answer": 2,
+                    "exp": "أسهل للمريض وأحسن للصورة ان المريض يكون واگف (Standing)."
+                },
+                {
+                    "q": "Humerus views are often done to exclude all of the following EXCEPT:",
+                    "trans": "تصوير العضد غالباً نسوي حتى نستبعد كل المشاكل التالية عدا:",
+                    "options": [
+                        "Large humeral shaft fractures",
+                        "Suspected symptomatic metastatic lesions",
+                        "Suspected forearm fractures",
+                        "Large humeral shaft fractures and metastatic lesions"
+                    ],
+                    "answer": 2,
+                    "exp": "كسور الساعد (Forearm) مالها علاقة بالعضد! نفحصها بتصوير الساعد."
+                },
+                {
+                    "q": "In AP view of the humerus, the patient is preferably:",
+                    "trans": "بـ AP للعضد، يفضل ان يكون المريض:",
+                    "options": [
+                        "Supine",
+                        "Prone",
+                        "Erect",
+                        "Lateral decubitus"
+                    ],
+                    "answer": 2,
+                    "exp": "يفضل يكون واگف (Erect) لسهولة ضبط الوضعية."
+                },
+                {
+                    "q": "In AP view of the humerus, the patient's .......... is against the image receptor.",
+                    "trans": "بـ AP للعضد، الـ ...... للمريض يكون ملاصق للفيلم.",
+                    "options": [
+                        "Front",
+                        "Side",
+                        "Back",
+                        "Affected arm only"
+                    ],
+                    "answer": 2,
+                    "exp": "وضع الـ AP يعني ظهر المريض (Back) يكون عالفيلم والاشعة تدخل من صدره."
+                },
+                {
+                    "q": "In AP humerus view, the arm is slightly .......... rotated to mimic the true anatomical position.",
+                    "trans": "بالـ AP للعضد، الذراع نفرها شوية بشكل ...... حتى تحاكي الوضع التشريحي الصحيح.",
+                    "options": [
+                        "Internally",
+                        "Externally",
+                        "Posteriorly",
+                        "Anteriorly"
+                    ],
+                    "answer": 1,
+                    "exp": "نفر الايد للخارج (Externally) يعني نخلي باطن الكف يشوف التيوب حتى العظم ينفتح صح."
+                },
+                
+                {
+                    "q": "The lateral view of the humerus is usually taken in a standing position.",
+                    "trans": "الجانبي للعضد غالباً يتسوى والمريض واگف.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، الوقوف هو الافضل والاسهل لتصوير العضد."
+                },
+                {
+                    "q": "The lateral view of the humerus can be taken in the supine position in the:",
+                    "trans": "نكدر نصور الجانبي للعضد والمريض مستلقي (supine) بحالات:",
+                    "options": [
+                        "Routine setting",
+                        "Pediatric setting",
+                        "Acute, trauma setting",
+                        "Outpatient setting"
+                    ],
+                    "answer": 2,
+                    "exp": "بس بحالات الحوادث والطوارئ (Trauma) لمن المريض ما يكدر يوكف نصوره وهو متمدد."
+                },
+               
+               
+                {
+                    "q": "In lateral humerus view, the injured side is:",
+                    "trans": "بالجانبي للعضد، الجهة المصابة تكون:",
+                    "options": [
+                        "Away from the detector",
+                        "Closest to the detector",
+                        "Behind the detector",
+                        "Above the detector"
+                    ],
+                    "answer": 1,
+                    "exp": "اكيد، الجزء المصاب لازم يكون اقرب شي للفيلم (Closest) حتى يقل التكبير وتزيد الدقة."
+                },
+                {
+                    "q": "In lateral view of the humerus, the elbow is flexed to:",
+                    "trans": "بالوضعية الجانبية للعضد، المرفق نثنيه بزاوية:",
+                    "options": [
+                        "45 degrees",
+                        "60 degrees",
+                        "90 degrees",
+                        "120 degrees"
+                    ],
+                    "answer": 2,
+                    "exp": "نثني المرفق 90 درجة حتى نستقر بالايد ونعدل وضع العضد."
+                },
+                {
+                    "q": "In lateral humerus view, the patient's hand is placed on their anterior superior iliac spine or stomach to:",
+                    "trans": "بالجانبي للعضد، نخلي ايد المريض على خاصرته او بطنه علمود:",
+                    "options": [
+                        "Reduce radiation dose",
+                        "Improve image quality",
+                        "Maintain position",
+                        "Immobilize the elbow"
+                    ],
+                    "answer": 2,
+                    "exp": "حتى المريض يثبت وتبقى الايد بوضع جانبي مستقر (Maintain position) للكتف."
+                },
+                {
+                    "q": "The centering point for both AP and lateral views of the humerus is:",
+                    "trans": "السنتر بالوضعين الـ AP والجانبي للعضد يكون:",
+                    "options": [
+                        "Proximal humerus shaft",
+                        "Distal humerus shaft",
+                        "Mid humerus shaft",
+                        "Glenohumeral joint"
+                    ],
+                    "answer": 2,
+                    "exp": "السنتر يكون بنص عظم العضد بالضبط (Mid humerus shaft)."
+                },
+                {
+                    "q": "Collimation in humerus views should superiorly include:",
+                    "trans": "التحديد الشعاعي للعضد من فوگ (superiorly) لازم يوصل لـ:",
+                    "options": [
+                        "Mid humerus only",
+                        "Skin margins above the glenohumeral joint",
+                        "Acromion process only",
+                        "Clavicle"
+                    ],
+                    "answer": 1,
+                    "exp": "لازم نفتح الفيلد بحيث يطلع مفصل الكتف (Glenohumeral joint) وحوافي الجلد من فوگ."
+                },
+                {
+                    "q": "Collimation in humerus views should inferiorly include:",
+                    "trans": "التحديد للعضد من جوه (inferiorly) لازم يتضمن:",
+                    "options": [
+                        "Mid humerus only",
+                        "Proximal humerus",
+                        "Distal humerus including the elbow joint",
+                        "Wrist joint"
+                    ],
+                    "answer": 2,
+                    "exp": "لازم نطلع المرفق بالكامل بالصورة حتى تكون سلسلة صحيحة ومكتملة."
+                },
+                {
+                    "q": "The detector size for humerus views is:",
+                    "trans": "حجم الفلم لتصوير العضد هو:",
+                    "options": [
+                        "18 cm x 24 cm",
+                        "24 cm x 30 cm",
+                        "35 cm x 43 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 2,
+                    "exp": "العضد طويل جداً فنحتاج اكبر كاسيت (35 بـ 43 سم) حتى يكفي."
+                },
+                {
+                    "q": "The KVp range for humerus views is:",
+                    "trans": "مدى الـ KVp لتصوير العضد هو:",
+                    "options": [
+                        "50-60 KVp",
+                        "40-45 KVp",
+                        "60-70 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 2,
+                    "exp": "العضد سميك وبي عضلات هواي، فنصعد الـ KVp ونسويه بين 60 لـ 70."
+                },
+                {
+                    "q": "The mAs range for humerus views is:",
+                    "trans": "مدى الـ mAs لتصوير العضد هو:",
+                    "options": [
+                        "1-5 mAs",
+                        "3-5 mAs",
+                        "7-15 mAs",
+                        "20-30 mAs"
+                    ],
+                    "answer": 2,
+                    "exp": "كذلك الـ mAs نزيده ويكون بين (7 الى 15) حتى يعبر من العضلات والعظم."
+                },
+               
+                {
+                    "q": "A grid is used in humerus views.",
+                    "trans": "نستخدم Grid بتصوير العضد.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "اي نعم هنا نستخدم، لان العضد والكتف مناطق سميكة فضروري نمنع التشويش باستخدام الكريد."
+                },
+                {
+                    "q": "All statements about humerus technical factors are true EXCEPT:",
+                    "trans": "كل العبارات عن العوامل التقنية للعضد صحيحة عدا:",
+                    "options": [
+                        "KVp range is 60-70",
+                        "mAs range is 7-15",
+                        "SID is 100 cm",
+                        "Grid is not used"
+                    ],
+                    "answer": 3,
+                    "exp": "الكريد ضروري هنا، فهالعبارة خاطئة لانها تگول ما نستخدم كريد."
+                },
+                {
+                    "q": "In lateral humerus image evaluation, the scapula is in .......... position.",
+                    "trans": "بتقييم الجانبي للعضد، لوح الكتف (scapula) يكون ظاهر بوضع:",
+                    "options": [
+                        "AP",
+                        "Oblique",
+                        "Lateral (Y-shaped)",
+                        "Axial"
+                    ],
+                    "answer": 2,
+                    "exp": "الكتف راح يبين بشكل جانبي يشبه حرف Y (Lateral Y-shaped)."
+                },
+                {
+                    "q": "In lateral humerus image evaluation, the humerus is positioned away from the patient's body to:",
+                    "trans": "بتقييم الجانبي للعضد، العضد يتم ابعاده عن جسم المريض علمود:",
+                    "options": [
+                        "Increase radiation dose",
+                        "Minimize superimposition",
+                        "Improve brightness",
+                        "Reduce detector size"
+                    ],
+                    "answer": 1,
+                    "exp": "نبعد الايد شوية حتى ما تتراكب (Minimize superimposition) ويى الاضلاع والقفص الصدري."
+                },
+                {
+                    "q": "The detector size for humerus views is larger than the detector size for hand views.",
+                    "trans": "حجم الفلم للذراع اكبر من حجم الفلم للايد.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "اكيد صح، للايد استخدمنا (18x24) بينما للذراع نستخدم كاسيت جبير (35x43)."
+                },
+               
+               
+                {
+                    "q": "For suspected occult fracture at the proximal end of the humerus, a separate .......... series is recommended.",
+                    "trans": "اذا شكينا اكو كسر خفي بالطرف العلوي للعضد، يفضل نسوي سلسلة صور لـ:",
+                    "options": [
+                        "Forearm",
+                        "Wrist",
+                        "Shoulder",
+                        "Hand"
+                    ],
+                    "answer": 2,
+                    "exp": "الطرف العلوي للعضد قريب عالكتف، فالافضل نسوي صور تشخيصية خاصة للكتف (Shoulder)."
+                },
+                {
+                    "q": "For suspected occult fracture at the distal end of the humerus, a separate .......... series is recommended.",
+                    "trans": "اذا شكينا اكو كسر خفي بالطرف السفلي للعضد، يفضل نسوي سلسلة صور لـ:",
+                    "options": [
+                        "Wrist",
+                        "Elbow",
+                        "Shoulder",
+                        "Forearm"
+                    ],
+                    "answer": 1,
+                    "exp": "الطرف السفلي مرتبط بالمرفق، فضروري نصور سلسلة صور خاصة بالمرفق (Elbow)."
+                },
+               
+            ],
+            lec8: [
+                {
+                    "q": "The shoulder AP view is a standard projection.",
+                    "trans": "وضعية الـ AP للكتف تعتبر وضعية قياسية.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، الـ AP هي الوضعية الاساسية والاولى بكل فحوصات الكتف."
+                },
+                {
+                    "q": "The shoulder AP view demonstrates all of the following EXCEPT:",
+                    "trans": "الـ AP للكتف توضح كل التالي عدا:",
+                    "options": [
+                        "Entire clavicle",
+                        "Scapula",
+                        "Glenohumeral joint",
+                        "Distal carpus"
+                    ],
+                    "answer": 3,
+                    "exp": "البعيد عن الرسغ (Distal carpus) ما اله علاقة بالكتف! هذا بالايد جوه."
+                },
+                {
+                    "q": "The shoulder AP view demonstrates the shoulder in its natural anatomical position.",
+                    "trans": "الـ AP للكتف تبين الكتف بوضعه التشريحي الطبيعي.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، لمن المريض يوكف وينزل ايده براحتها راح يبين الكتف طبيعي."
+                },
+                {
+                    "q": "In AP view of the shoulder, the patient is preferably:",
+                    "trans": "بالـ AP للكتف، يفضل ان يكون المريض:",
+                    "options": [
+                        "Supine",
+                        "Prone",
+                        "Erect",
+                        "Lateral decubitus"
+                    ],
+                    "answer": 2,
+                    "exp": "الافضل ان المريض يوكف (Erect) حتى تسهل حركته ونضبط وضعيته براحتنا."
+                },
+               
+                {
+                    "q": "In AP shoulder view, the .......... joint of the affected side is at the center of the image receptor.",
+                    "trans": "بالـ AP للكتف، مفصل الـ ...... للجهة المصابة يكون بمركز الفيلم.",
+                    "options": [
+                        "Acromioclavicular",
+                        "Sternoclavicular",
+                        "Glenohumeral",
+                        "Elbow"
+                    ],
+                    "answer": 2,
+                    "exp": "مفصل الكتف الرئيسي هو الحقاني العضدي (Glenohumeral joint) وهو اللي يتسنتر بي الكاسيت."
+                },
+                {
+                    "q": "In AP shoulder view, the affected arm is supinated and slightly:",
+                    "trans": "بالـ AP للكتف، الذراع المصابة تكون supinated وبشكل طفيف:",
+                    "options": [
+                        "Adducted toward the body",
+                        "Abducted away from the body",
+                        "Flexed at 90 degrees",
+                        "Elevated above the head"
+                    ],
+                    "answer": 1,
+                    "exp": "نبعد الايد شوية عن الجسم (Abducted) حتى الكتف ينفتح وما يغطي عليه القفص الصدري."
+                },
+                {
+                    "q": "In AP shoulder view, the shoulder is slightly .......... rotated to bring it closer to the film.",
+                    "trans": "بالـ AP للكتف، الكتف يتم فرّه بشكل طفيف ...... حتى نقربه اكثر للفيلم.",
+                    "options": [
+                        "Internally",
+                        "Externally",
+                        "Posteriorly",
+                        "Anteriorly"
+                    ],
+                    "answer": 1,
+                    "exp": "نفر الكتف للخارج (Externally) حتى يلامس الكاسيت بالكامل وتقل الفجوة بينهم."
+                },
+                {
+                    "q": "The centering point for AP view of the shoulder is:",
+                    "trans": "السنتر بوضعية الـ AP للكتف تكون:",
+                    "options": [
+                        "Mid humerus shaft",
+                        "Acromioclavicular joint",
+                        "Over the glenohumeral joint",
+                        "Mid clavicle"
+                    ],
+                    "answer": 2,
+                    "exp": "السنتر يكون مباشرة فوگ مفصل الكتف الرئيسي (Glenohumeral joint)."
+                },
+                {
+                    "q": "The detector size for AP view of the shoulder is:",
+                    "trans": "حجم الفلم (detector size) بالـ AP للكتف هو:",
+                    "options": [
+                        "18 cm x 24 cm",
+                        "24 cm x 30 cm",
+                        "35 cm x 43 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 1,
+                    "exp": "نحتاج كاسيت متوسط الحجم 24 بـ 30 سم حتى يكفي الكتف والمناطق المجاورة."
+                },
+                {
+                    "q": "The KVp range for AP view of the shoulder is:",
+                    "trans": "مدى الـ KVp لتصوير الكتف AP هو:",
+                    "options": [
+                        "50-60 KVp",
+                        "40-45 KVp",
+                        "60-70 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 2,
+                    "exp": "الكتف منطقة سميكة، فنحتاج KVp عالي بين 60 لـ 70."
+                },
+                {
+                    "q": "The mAs range for AP view of the shoulder is:",
+                    "trans": "مدى الـ mAs لتصوير الكتف AP هو:",
+                    "options": [
+                        "1-5 mAs",
+                        "3-5 mAs",
+                        "10-20 mAs",
+                        "25-30 mAs"
+                    ],
+                    "answer": 2,
+                    "exp": "همينا لازم نزيده (10-20 mAs) حتى تكفي الاشعة لاختراق العضلات والعظم."
+                },
+               
+                {
+                    "q": "A grid is used in AP view of the shoulder.",
+                    "trans": "نستخدم Grid بتصوير الـ AP للكتف.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "اي نعم، الكتف منطقة سميكة فتولد اشعة متشتتة، فالكريد (Grid) هنا ضروري جداً."
+                },
+                {
+                    "q": "In AP shoulder image evaluation, the entire clavicle is visualized alongside the glenoid cavity and scapula.",
+                    "trans": "بتقييم صورة الـ AP للكتف، عظم الترقوة بالكامل يبين وية تجويف الحقاني (glenoid) ولوح الكتف (scapula).",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، الصورة الناجحة لازم تطلع الترقوة كلها والكتف كامل."
+                },
+                {
+                    "q": "The axial view of the shoulder provides additional information when assessing:",
+                    "trans": "الوضعية المحورية (axial) للكتف تنطي معلومات اضافية لمن نقيم:",
+                    "options": [
+                        "Shaft fractures only",
+                        "Dislocations and glenohumeral instability",
+                        "Clavicle fractures only",
+                        "Scapula body fractures only"
+                    ],
+                    "answer": 1,
+                    "exp": "تفيدنا كلش بحالات الخلع (Dislocations) وعدم استقرار مفصل الكتف."
+                },
+                {
+                    "q": "If the superior-inferior axial view positioning is difficult to achieve, the .......... axial view can be performed instead.",
+                    "trans": "اذا جانت وضعية (axial من فوگ لجوة) صعبة المريض يسويها، نگدر نسوي وضعية:",
+                    "options": [
+                        "Superior-superior",
+                        "Inferior-superior",
+                        "Oblique-superior",
+                        "Lateral-inferior"
+                    ],
+                    "answer": 1,
+                    "exp": "نعكس التيوب ونسويها من جوة لفوگ (Inferior-superior) بدالها."
+                },
+                {
+                    "q": "In superior-inferior axial view of the shoulder, the patient is:",
+                    "trans": "بوضعية الـ (superior-inferior) المحورية للكتف، المريض يكون:",
+                    "options": [
+                        "Standing against the detector",
+                        "Seated next to the image receptor",
+                        "Lying supine",
+                        "Prone on the table"
+                    ],
+                    "answer": 1,
+                    "exp": "المريض يكعد بصف الكاسيت اللي يكون محطوط على الطاولة."
+                },
+                {
+                    "q": "In superior-inferior axial view, the image receptor is at .......... height.",
+                    "trans": "بالوضعية المحورية، الكاسيت يكون بارتفاع الـ:",
+                    "options": [
+                        "Shoulder",
+                        "Neck",
+                        "Mid thoracic",
+                        "Hip"
+                    ],
+                    "answer": 2,
+                    "exp": "الكاسيت نخليه بارتفاع نص الصدر (Mid thoracic) حتى المريض يكدر يميل عليه براحته."
+                },
+                {
+                    "q": "In superior-inferior axial view of the shoulder, the affected arm is:",
+                    "trans": "بالوضعية المحورية، الذراع المصابة تكون:",
+                    "options": [
+                        "Adducted with elbow extended",
+                        "Abducted with the elbow resting on the detector",
+                        "Flexed at 90 degrees behind the back",
+                        "Elevated above the head"
+                    ],
+                    "answer": 1,
+                    "exp": "ذراع المريض تنرفع وتتكئ على الطاولة (الكاسيت) والكتف يبين من فوگ."
+                },
+                {
+                    "q": "In superior-inferior axial shoulder view, the patient's head is tilted:",
+                    "trans": "بالوضعية المحورية للكتف، رأس المريض يميل لـ:",
+                    "options": [
+                        "Toward the affected side",
+                        "Away toward the unaffected side",
+                        "Backward",
+                        "Forward only"
+                    ],
+                    "answer": 1,
+                    "exp": "المريض يميل راسه بعيد عن الجهة المصابة (لجهة الكتف السليم) حتى يوسع المجال للتيوب."
+                },
+                {
+                    "q": "The centering point for superior-inferior axial shoulder view is:",
+                    "trans": "السنتر بالوضعية المحورية للكتف يكون:",
+                    "options": [
+                        "Mid humerus shaft",
+                        "Acromioclavicular joint",
+                        "Glenohumeral joint",
+                        "Mid clavicle"
+                    ],
+                    "answer": 2,
+                    "exp": "السنتر ثابت على مفصل الحقاني العضدي (Glenohumeral joint)."
+                },
+                {
+                    "q": "The tube angle for superior-inferior axial shoulder view is:",
+                    "trans": "زاوية التيوب بالوضعية المحورية للكتف (superior-inferior) تكون:",
+                    "options": [
+                        "0 degrees",
+                        "5-15 degrees toward the patient's elbow",
+                        "45 degrees caudal",
+                        "30 degrees cephalad"
+                    ],
+                    "answer": 1,
+                    "exp": "نميل التيوب بشكل قليل (5 لـ 15 درجة) باتجاه مرفق المريض (Elbow)."
+                },
+                
+                {
+                    "q": "The detector size for superior-inferior axial shoulder view is:",
+                    "trans": "حجم الفلم بالوضعية المحورية للكتف هو:",
+                    "options": [
+                        "24 cm x 30 cm",
+                        "35 cm x 43 cm",
+                        "18 cm x 24 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 2,
+                    "exp": "هنا نستخدم كاسيت صغير 18 بـ 24 لان المنطقة المطلوبة محددة جداً."
+                },
+                {
+                    "q": "The KVp range for superior-inferior axial shoulder view is:",
+                    "trans": "مدى الـ KVp للوضعية المحورية للكتف هو:",
+                    "options": [
+                        "40-45 KVp",
+                        "50-60 KVp",
+                        "70-80 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 1,
+                    "exp": "لان الاشعة راح تخترق اقل سمك مقارنة بالـ AP، فنقلل الـ KVp لـ 50-60."
+                },
+                {
+                    "q": "The mAs range for superior-inferior axial shoulder view is:",
+                    "trans": "مدى الـ mAs بالوضعية المحورية للكتف هو:",
+                    "options": [
+                        "1-5 mAs",
+                        "3-5 mAs",
+                        "8-15 mAs",
+                        "20-30 mAs"
+                    ],
+                    "answer": 2,
+                    "exp": "الجرعة هم تقل شوية فتصير بين 8 لـ 15."
+                },
+                
+                {
+                    "q": "The Garth view of the shoulder is a .......... projection.",
+                    "trans": "وضعية كارث (Garth view) للكتف هي وضعية:",
+                    "options": [
+                        "AP",
+                        "Lateral",
+                        "Tangential",
+                        "Axial"
+                    ],
+                    "answer": 2,
+                    "exp": "تعتبر وضعية مسّاسة أو مماسّية (Tangential) مو محورية."
+                },
+                {
+                    "q": "The Garth view is used in:",
+                    "trans": "وضعية Garth تُستخدم بـ:",
+                    "options": [
+                        "Routine screening",
+                        "Trauma",
+                        "Pediatric imaging only",
+                        "Post-surgical assessment only"
+                    ],
+                    "answer": 1,
+                    "exp": "تستخدم بشكل اساسي بحالات الحوادث والكسور (Trauma) لمن المريض يتألم ومايكدر يرفع إيده."
+                },
+                {
+                    "q": "The Garth view is best for evaluating the glenohumeral joint for:",
+                    "trans": "وضعية Garth ممتازة لتقييم مفصل الكتف من ناحية:",
+                    "options": [
+                        "Shaft fractures and metastatic lesions",
+                        "Dislocations and trauma to the glenoid of the scapula",
+                        "Clavicle fractures only",
+                        "Acromioclavicular joint only"
+                    ],
+                    "answer": 1,
+                    "exp": "هي الافضل حتى نشوف اذا اكو خلع (Dislocation) او كسر بتجويف الـ Glenoid بالكتف."
+                },
+                {
+                    "q": "The Garth view can be used as a replacement to the .......... view in trauma.",
+                    "trans": "نگدر نستخدم وضعية Garth كبديل عن وضعية الـ ...... بحالات الطوارئ (trauma).",
+                    "options": [
+                        "AP shoulder view",
+                        "Axial shoulder view",
+                        "Lateral scapula view",
+                        "Y view and AP view"
+                    ],
+                    "answer": 2,
+                    "exp": "بالكسور المريض ما يكدر يفتر حتى يسوي Lateral Scapula، فنسويله Garth وهو نايم كبديل الها."
+                },
+                {
+                    "q": "In Garth view, the midcoronal plane of the patient is .......... to the image receptor.",
+                    "trans": "بوضعية Garth، المستوى التاجي (midcoronal plane) للمريض يكون ...... للكاسيت.",
+                    "options": [
+                        "Perpendicular",
+                        "Parallel",
+                        "At 45 degrees",
+                        "At 30 degrees"
+                    ],
+                    "answer": 1,
+                    "exp": "المريض يسند ظهره عالفلم فيصير مستواه موازي (Parallel) للكاسيت."
+                },
+                {
+                    "q": "In Garth view, the patient is rotated toward the affected side by:",
+                    "trans": "بوضعية Garth، المريض يُدار باتجاه الجهة المصابة بزاويـة:",
+                    "options": [
+                        "10-20 degrees",
+                        "30-45 degrees",
+                        "60-70 degrees",
+                        "90 degrees"
+                    ],
+                    "answer": 1,
+                    "exp": "المريض يفتر ويضغط كتفه المصاب على الكاسيت بزاوية 30 لـ 45 درجة."
+                },
+                {
+                    "q": "In Garth view, if possible, the patient has the affected side's hand resting on the:",
+                    "trans": "بوضعية Garth، اذا المريض يكدر يفضل ان يخلي إيد الجهة المصابة على:",
+                    "options": [
+                        "Affected shoulder",
+                        "Unaffected shoulder",
+                        "Anterior superior iliac spine",
+                        "Stomach"
+                    ],
+                    "answer": 1,
+                    "exp": "يرفع الايد المصابة ويحطها على الكتف السليم (Unaffected shoulder) حتى نجنب التداخل بالصورة."
+                },
+                {
+                    "q": "The centering point for Garth view is:",
+                    "trans": "السنتر بوضعية Garth يكون:",
+                    "options": [
+                        "Mid humerus shaft",
+                        "Acromioclavicular joint",
+                        "45° caudal angle of the x-ray tube to the glenohumeral joint",
+                        "Mid clavicle"
+                    ],
+                    "answer": 2,
+                    "exp": "نسنتر على مفصل الكتف بس التيوب يكون مايل 45 درجة للأسفل (caudal)."
+                },
+                {
+                    "q": "The tube angle for Garth view is:",
+                    "trans": "زاوية التيوب بوضعية Garth هي:",
+                    "options": [
+                        "15° caudal",
+                        "30° cephalad",
+                        "45° caudal",
+                        "90° lateral"
+                    ],
+                    "answer": 2,
+                    "exp": "45 درجة باتجاه اقدام المريض (caudal)."
+                },
+               
+                {
+                    "q": "The detector size for Garth view is:",
+                    "trans": "حجم الفلم لـ Garth view هو:",
+                    "options": [
+                        "18 cm x 24 cm",
+                        "24 cm x 30 cm",
+                        "35 cm x 43 cm",
+                        "10 cm x 12 cm"
+                    ],
+                    "answer": 1,
+                    "exp": "كاسيت 24 بـ 30 سم كلش كافي ومنطقي."
+                },
+                {
+                    "q": "The KVp range for Garth view is:",
+                    "trans": "مدى الـ KVp لـ Garth view هو:",
+                    "options": [
+                        "50-60 KVp",
+                        "60-70 KVp",
+                        "70-80 KVp",
+                        "90-100 KVp"
+                    ],
+                    "answer": 1,
+                    "exp": "نفس الـ AP العادي للكتف، يحتاج بين 60 لـ 70."
+                },
+                {
+                    "q": "The mAs range for Garth view is:",
+                    "trans": "مدى الـ mAs لـ Garth view هو:",
+                    "options": [
+                        "1-5 mAs",
+                        "3-5 mAs",
+                        "10-18 mAs",
+                        "25-30 mAs"
+                    ],
+                    "answer": 2,
+                    "exp": "يحتاج بين 10 لـ 18 لان الاشعة راح تخترق الكتف بزاوية مائلة طويلة."
+                },
+                {
+                    "q": "In posterior dislocation, the humeral head will be projected .......... to the glenoid.",
+                    "trans": "بالخلع الخلفي (posterior dislocation)، رأس العضد راح يبين ...... للحقاني (glenoid) بوضعية Garth.",
+                    "options": [
+                        "Inferior",
+                        "Lateral",
+                        "Superior",
+                        "Medial"
+                    ],
+                    "answer": 2,
+                    "exp": "بوضعية الـ Garth، اذا اكو خلع خلفي، راس العضد راح يصعد ليگدام للاعلى (Superior)."
+                },
+                {
+                    "q": "In posterior dislocation, the humeral head is often obstructed by the:",
+                    "trans": "بالخلع الخلفي، رأس العضد غالباً ينحجب بواسطة الـ:",
+                    "options": [
+                        "Clavicle",
+                        "Coracoid process",
+                        "Acromion",
+                        "Scapula body"
+                    ],
+                    "answer": 2,
+                    "exp": "يروح ليورا ويختل ورى بروز الاخرم (Acromion) بلوح الكتف."
+                },
+                {
+                    "q": "In anterior dislocation, the humeral head will be projected .......... to the glenoid.",
+                    "trans": "بالخلع الامامي، رأس العضد راح يبين ...... للحقاني.",
+                    "options": [
+                        "Superior",
+                        "Lateral",
+                        "Inferior",
+                        "Medial"
+                    ],
+                    "answer": 2,
+                    "exp": "الخلع الامامي راح ينزل العضد لجوة (Inferior) مقارنة بالجلينويد بصورة الكارث."
+                },
+                {
+                    "q": "The lateral scapula view is also known as the .......... view.",
+                    "trans": "الوضعية الجانبية للوح الكتف (scapula) تعرف ايضاً باسم:",
+                    "options": [
+                        "Axial view",
+                        "Garth view",
+                        "Y view",
+                        "Tangential view"
+                    ],
+                    "answer": 2,
+                    "exp": "يسموها حرف الـ Y (Y view) لان عظم اللوح راح يشكل هذا الحرف بالصورة."
+                },
+                {
+                    "q": "The lateral scapula Y view is part of the standard shoulder series.",
+                    "trans": "وضعية الـ Y view للـ scapula هي جزء من الوضعيات القياسية للكتف.",
+                    "options": [
+                        "True",
+                        "False"
+                    ],
+                    "answer": 0,
+                    "exp": "صح، غالباً تنطلب كروتين ويا الـ AP."
+                },
+                {
+                    "q": "In lateral scapula Y view, the patient position is erect or sitting, facing the:",
+                    "trans": "بـ Y view، المريض يوكف او يكعد وهو مواجه للـ:",
+                    "options": [
+                        "Away from the detector",
+                        "Upright detector",
+                        "Sideways to the detector",
+                        "Supine on the table"
+                    ],
+                    "answer": 1,
+                    "exp": "المريض ينطي وجهه للكاسيت (Upright detector) الواگف كدامه."
+                },
+               
+                {
+                    "q": "In lateral scapula Y view, the hand is placed on the patient's back with the arm:",
+                    "trans": "بالـ Y view، يد المريض نضعها على ظهره بحيث يكون الذراع:",
+                    "options": [
+                        "Extended",
+                        "Abducted",
+                        "Flexed",
+                        "Supinated"
+                    ],
+                    "answer": 2,
+                    "exp": "الذراع لازم يكون مثني (Flexed) حتى لوح الكتف يبتعد عن الاضلاع."
+                },
+                {
+                    "q": "The centering point for lateral scapula Y view is:",
+                    "trans": "السنتر لـ Y view يكون:",
+                    "options": [
+                        "Over the glenohumeral joint",
+                        "Mid humerus shaft",
+                        "Central to the medial scapula border",
+                        "Mid clavicle"
+                    ],
+                    "answer": 2,
+                    "exp": "السنتر يكون بمنتصف الحافة الانسية (Medial border) للوح الكتف."
+                },
+                {
+                    "q": "In lateral scapula Y view image evaluation, the acromion and the .......... process form the upper arms of the Y.",
+                    "trans": "بتقييم صورة الـ Y view، بروز الاخرم (acromion) وبروز الـ ...... يشكلون الاذرع العلوية لحرف الـ Y.",
+                    "options": [
+                        "Olecranon",
+                        "Coracoid",
+                        "Coronoid",
+                        "Styloid"
+                    ],
+                    "answer": 1,
+                    "exp": "الاذرع الاثنين مال حرف الواي هما الـ Acromion والغرابي الـ (Coracoid process)."
+                },
+                {
+                    "q": "In lateral scapula Y view, if the shoulder is intact, the humeral head is superimposed at the .......... of the Y.",
+                    "trans": "بالـ Y view، اذا الكتف سليم، رأس العضد يكون متطابق في ...... حرف الـ Y.",
+                    "options": [
+                        "Upper arm",
+                        "Top",
+                        "Base",
+                        "Side"
+                    ],
+                    "answer": 2,
+                    "exp": "الكتف الطبيعي لازم يكون رأس العضد كاعد بالضبط بقاعدة (Base) التقاطع مال ذراعي الـ Y."
+                }
+            ],
+           
+            
+            lec10: [
+                {
+                                "q": "The .......... plane is vertical plane parallel to the median plane divides the body into Right and left parts.",
+                                "trans": "المستوى .......... هو مستوى عمودي موازٍ للمستوى الناصف ويقسم الجسم إلى جزأين أيمن وأيسر.",
+                                "options": [
+                                                "Coronal",
+                                                "Axial",
+                                                "sagittal",
+                                                "Transverse"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Characteristics of radiographic quality:",
+                                "trans": "من خصائص الجودة الإشعاعية",
+                                "options": [
+                                                "Spatial resolution",
+                                                "Contrast resolution",
+                                                "Noise",
+                                                "All of them"
+                                ],
+                                "answer": 3,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The elbow is flexed in:",
+                                "trans": "المرفق يكون مثنياً في وضعية",
+                                "options": [
+                                                "Lateral wrist",
+                                                "PA hand",
+                                                "AP forearm",
+                                                "lateral forearm"
+                                ],
+                                "answer": 3,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "All statement about forearm are true Except:",
+                                "trans": "جميع العبارات التالية حول الساعد صحيحة، ما عدا:",
+                                "options": [
+                                                "the center point is mid forearm.",
+                                                "The elbow is extended in lateral view.",
+                                                "SID = 100 cm",
+                                                "The elbow is flexed in lateral view."
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In lateral hand, the hand is rotated internally by 90 degrees from the PA position.",
+                                "trans": "في وضعية اليد الجانبية، يتم تدوير اليد داخلياً بمقدار 90 درجة من وضعية الخلفي الأمامي.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The KVP range of scaphoid is:",
+                                "trans": "مدى الكيلوفولت للزورقي هو:",
+                                "options": [
+                                                "1-3",
+                                                "20_35",
+                                                "50-65",
+                                                "3-5"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": ".......... the essential view to assessing the suspected dislocation of scaphoid is:",
+                                "trans": "الوضعية الأساسية لتقييم حالة الخلع المشتبه بها للعظم القاربي (الزورقي) هي:",
+                                "options": [
+                                                "AP",
+                                                "PA",
+                                                "lateral",
+                                                "PA with angle"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The fingers are extended in:",
+                                "trans": "الأصابع تكون ممدودة في وضعية:",
+                                "options": [
+                                                "PA hand",
+                                                "Lateral hand",
+                                                "oblique hand",
+                                                "all of them"
+                                ],
+                                "answer": 3,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Abduction: movement of limb away from midline.",
+                                "trans": "الإبعاد: هو حركة الطرف بعيداً عن خط منتصف الجسم.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 0,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Flexed the hand, wrist and forearm in PA wrist.",
+                                "trans": "اليد والرسغ والساعد تكون في وضع الثني في وضعية الرسغ الخلفي الأمامي.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "both elbow joint and wrist joints are also kept in contact with the cassette in AP forearm.",
+                                "trans": "في وضعية الساعد الأمامي الخلفي، يظل كل من مفصل المرفق ومفصل الرسغ على تماس مع الكاسيت.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 0,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The centering point of oblique hand is:",
+                                "trans": "نقطة التمركز لوضعية اليد المائلة هي:",
+                                "options": [
+                                                "Third metacarpal head",
+                                                "second metacarpal head",
+                                                "first metacarpal head",
+                                                "mid carpal"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "To Control of scatter radiation:",
+                                "trans": "للتحكم في الإشعاع المبعثر :",
+                                "options": [
+                                                "increase beam",
+                                                "increase distance",
+                                                "grid (fliter)",
+                                                "all of them"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Adduction: movement of limb away from midline.",
+                                "trans": "التقريب: هو حركة الطرف بعيداً عن خط منتصف الجسم.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Flexed the hand, wrist and forearm in lateral wrist.",
+                                "trans": "اليد والرسغ والساعد تكون في وضع الثني في وضعية الرسغ الجانبية.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "both elbow joint and Shoulder joints are also kept in contact with the cassette in AP forearm.",
+                                "trans": "في وضعية الساعد الأمامي الخلفي، يظل كل من مفصل المرفق ومفصل الكتف على تماس مع الكاسيت.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The term \"Anterior\" refers to which part of the body:",
+                                "trans": "المصطلح \"أمامي\" يشير إلى أي جزء من الجسم:",
+                                "options": [
+                                                "The back of the body",
+                                                "The front of the body",
+                                                "The side of the body",
+                                                "The midline of the body"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The KVP range for a Wrist X-ray is:",
+                                "trans": "المدى النموذجي للكيلوفولت لصورة الرسغ بالأشعة السينية هو:",
+                                "options": [
+                                                "40 - 45 KVP",
+                                                "50 - 60 KVP",
+                                                "70 - 80 KVP",
+                                                "90 - 100 KVP"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The fingers are extended in:",
+                                "trans": "الأصابع تكون ممدودة في وضعية",
+                                "options": [
+                                                "PA hand",
+                                                "Lateral hand",
+                                                "Oblique hand",
+                                                "All of them"
+                                ],
+                                "answer": 3,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In oblique hand, the hand is rotated by 90 degrees:",
+                                "trans": "في وضعية اليد المائلة، يتم تدوير اليد بمقدار 90 درجة:",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In AP forearm, both elbow joint and wrist joint are in contact with the cassette:",
+                                "trans": "في وضعية الساعد الأمامي الخلفي، يكون كل من مفصل المرفق ومفصل الرسغ على تماس مع الكاسيت:",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 0,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The Sagittal plane divides the body into:",
+                                "trans": "المستوى السهمي يقسم الجسم إلى:",
+                                "options": [
+                                                "Upper and lower parts",
+                                                "Front and back parts",
+                                                "Right and left parts",
+                                                "Superior and inferior parts"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Characteristics of radiographic quality include:",
+                                "trans": "من خصائص الجودة الإشعاعية:",
+                                "options": [
+                                                "Spatial resolution",
+                                                "Contrast resolution",
+                                                "Noise",
+                                                "All of them"
+                                ],
+                                "answer": 3,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "To control scatter radiation, we use:",
+                                "trans": "للتحكم في الإشعاع المبعثر (الثانوي)، نستخدم:",
+                                "options": [
+                                                "Higher KVP",
+                                                "Grid (filter)",
+                                                "Less distance",
+                                                "Increased beam size"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The elbow is flexed to 90 degrees in:",
+                                "trans": "المرفق يكون مثنياً بزاوية 90 درجة في وضعية:",
+                                "options": [
+                                                "AP forearm",
+                                                "Lateral forearm",
+                                                "PA hand",
+                                                "AP wrist"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The centering point for lateral hand view is:",
+                                "trans": "نقطة التمركز لوضعية اليد الجانبية هي:",
+                                "options": [
+                                                "Third metacarpal head",
+                                                "Second metacarpal head",
+                                                "First metacarpal head",
+                                                "Mid carpal region"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In AP forearm view, the elbow joint should be:",
+                                "trans": "في وضعية الساعد الأمامي الخلفي، يجب أن يكون مفصل المرفق:",
+                                "options": [
+                                                "Flexed",
+                                                "Extended",
+                                                "Abducted",
+                                                "Rotated"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The centering point for shoulder AP view is:",
+                                "trans": "نقطة التمركز لوضعية الكتف الأمامي الخلفي هي:",
+                                "options": [
+                                                "Mid humerus shaft",
+                                                "Acromioclavicular joint",
+                                                "Glenohumeral joint",
+                                                "Coracoid process"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In lateral forearm view, the elbow is flexed to:",
+                                "trans": "في وضعية الساعد الجانبية، يكون المرفق مثنياً بزاوية:",
+                                "options": [
+                                                "45 degrees",
+                                                "90 degrees",
+                                                "120 degrees",
+                                                "180 degrees"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The centering point for humerus AP view is:",
+                                "trans": "نقطة التمركز لوضعية العضد الأمامي الخلفي هي:",
+                                "options": [
+                                                "Surgical neck",
+                                                "Mid humerus shaft",
+                                                "Medial epicondyle",
+                                                "Greater tuberosity"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In lateral humerus view, the elbow should be flexed at:",
+                                "trans": "في وضعية العضد الجانبية، يجب أن يكون المرفق مثنياً بزاوية:",
+                                "options": [
+                                                "45 degrees",
+                                                "90 degrees",
+                                                "120 degrees",
+                                                "180 degrees"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The KVP range for shoulder AP view is:",
+                                "trans": "المدى النموذجي للكيلوفولت لوضعية الكتف الأمامي الخلفي هو:",
+                                "options": [
+                                                "40-50 kVp",
+                                                "50-60 kVp",
+                                                "60-70 kVp",
+                                                "70-80 kVp"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In shoulder Garth view, the tube angulation is:",
+                                "trans": "في وضعية الكتف (جارث)، تكون زاوية الأنبوبة:",
+                                "options": [
+                                                "15-20° cephalic",
+                                                "30-35° caudal",
+                                                "45° caudal",
+                                                "90° lateral"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The centering point for wrist PA view is:",
+                                "trans": "نقطة التمركز لوضعية الرسغ الخلفي الأمامي هي:",
+                                "options": [
+                                                "Third metacarpal head",
+                                                "Distal radioulnar joint",
+                                                "Mid carpal region",
+                                                "Radial styloid process"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The centering point for forearm lateral view is:",
+                                "trans": "نقطة التمركز لوضعية الساعد الجانبية هي:",
+                                "options": [
+                                                "Elbow joint",
+                                                "Wrist joint",
+                                                "Mid forearm region",
+                                                "Radial head"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The SID for all forearm views is:",
+                                "trans": "مسافة المصدر إلى المستقبل لجميع وضعيات الساعد هي:",
+                                "options": [
+                                                "80 cm",
+                                                "100 cm",
+                                                "120 cm",
+                                                "150 cm"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In humerus lateral view, the patient's hand should be placed on:",
+                                "trans": "في وضعية العضد الجانبية، يجب وضع يد المريض على:",
+                                "options": [
+                                                "The hip",
+                                                "stomach",
+                                                "The chest",
+                                                "The opposite shoulder"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The detector size for humerus views is:",
+                                "trans": "حجم الكاشف لوضعيات العضد هو:",
+                                "options": [
+                                                "18 cm x 24 cm",
+                                                "24 cm x 30 cm",
+                                                "35 cm x 43 cm",
+                                                "15 cm x 30 cm"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The grid should be used in which of the following views?",
+                                "trans": "يجب استخدام المِشبك في أي من الوضعيات التالية؟",
+                                "options": [
+                                                "Hand views",
+                                                "Wrist views",
+                                                "Forearm views",
+                                                "Shoulder and humerus views"
+                                ],
+                                "answer": 3,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In shoulder lateral scapula view (Y view), the scapula appears as:",
+                                "trans": "في وضعية الكتف الجانبية للوح الكتف (Y view)، يظهر لوح الكتف بشكل:",
+                                "options": [
+                                                "Triangle",
+                                                "Circle",
+                                                "Letter Y",
+                                                "Straight line"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The KVP range for humerus views is:",
+                                "trans": "المدى النموذجي للكيلوفولت لوضعيات العضد هو:",
+                                "options": [
+                                                "50-60 kVp",
+                                                "60-70 kVp",
+                                                "70-80 kVp",
+                                                "80-90 kVp"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In shoulder Garth view, the patient is rotated:",
+                                "trans": "في وضعية الكتف (جارث)، يتم تدوير المريض بزاوية:",
+                                "options": [
+                                                "15-20°",
+                                                "30-45°",
+                                                "60-70°",
+                                                "90°"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In wrist lateral view, the hand should be:",
+                                "trans": "في وضعية الرسغ الجانبية، يجب أن تكون اليد:",
+                                "options": [
+                                                "Flexed",
+                                                "Extended",
+                                                "Abducted",
+                                                "Pronated"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In AP forearm view, the forearm should be:",
+                                "trans": "في وضعية الساعد الأمامي الخلفي، يجب أن يكون الساعد:",
+                                "options": [
+                                                "Pronated",
+                                                "Supinated",
+                                                "Rotated internally",
+                                                "Rotated externally"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In lateral hand view, the centering point is:",
+                                "trans": "في وضعية اليد الجانبية، نقطة التمركز تكون :",
+                                "options": [
+                                                "First metacarpal",
+                                                "Second metacarpal",
+                                                "Third metacarpal",
+                                                "Fifth metacarpal"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "The shoulder Garth view is best for evaluating:",
+                                "trans": "وضعية الكتف (جارث) هي الأفضل لتقييم:",
+                                "options": [
+                                                "Clavicle fractures",
+                                                "Glenohumeral joint dislocations",
+                                                "Wrist fractures",
+                                                "humerus fractures"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In Monteggia fracture-dislocation, there is:",
+                                "trans": "في كسر-خلع مونتيجيا، يوجد:",
+                                "options": [
+                                                "Radial fracture",
+                                                "Ulna fracture",
+                                                "Both radius and ulna fractures",
+                                                "Scaphoid fracture"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Subject factors affecting image quality include all of the following EXCEPT:",
+                                "trans": "عوامل الموضوع المؤثرة على جودة الصورة تشمل جميع ما يلي ما عدا:",
+                                "options": [
+                                                "Subject contrast",
+                                                "Patient thickness",
+                                                "Film processing",
+                                                "Kilovolt peak"
+                                ],
+                                "answer": 2,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "In hand view, grid be used.",
+                                "trans": "في وضعيات اليد, الشبكة تستخدم.",
+                                "options": [
+                                                "True",
+                                                "False"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                },
+                {
+                                "q": "Spatial resolution in radiology refers to the ability to:",
+                                "trans": "الدقة المكانية في الأشعة تشير إلى القدرة على:",
+                                "options": [
+                                                "Distinguish structures with similar subject contrast",
+                                                "Differentiate two objects",
+                                                "Control scatter radiation",
+                                                "Increase image brightness"
+                                ],
+                                "answer": 1,
+                                "exp": "هذا السؤال من الأسئلة المرشحة والمهمة جداً للامتحان، احفظ الجواب وركز بي."
+                }
+]
+        };
+        let currentQuiz = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let selectedLectId = '';
+        let userAnswers = [];
+        const letters = ['A', 'B', 'C', 'D'];
+        let hintsLeft = 3;
+
+        // Prevent copying and selection
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 86 || e.keyCode === 85 || e.keyCode === 117)) {
+                e.preventDefault();
+            }
+        });
+
+        // Theme management
+        function toggleTheme() {
+            const body = document.getElementById('body');
+            const icon = document.querySelector('.fa-moon, .fa-sun');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                icon.classList.replace('fa-sun', 'fa-moon');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                icon.classList.replace('fa-moon', 'fa-sun');
+            }
+        }
+
+        // Full Screen
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function startQuiz(lectId) {
+            selectedLectId = lectId;
+            currentQuiz = questionsDB[lectId];
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            hintsLeft = 3;
+            document.getElementById('hint-count').innerText = hintsLeft;
+            document.getElementById('hint-btn').disabled = false;
+            document.getElementById('hint-btn').style.opacity = '1';
+
+            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('quiz-screen').style.display = 'block';
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = currentQuiz[currentQuestionIndex];
+
+            // Setup DOM components
+            document.getElementById('question-counter').innerText = `السؤال ${currentQuestionIndex + 1} / ${currentQuiz.length}`;
+            document.getElementById('progress').style.width = `${((currentQuestionIndex) / currentQuiz.length) * 100}%`;
+
+            document.getElementById('q-text').innerText = q.q;
+            document.getElementById('q-trans').innerText = q.trans;
+            document.getElementById('q-trans').style.display = 'none';
+
+            document.getElementById('explanation').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+
+            if (hintsLeft > 0) {
+                document.getElementById('hint-btn').disabled = false;
+                document.getElementById('hint-btn').style.opacity = '1';
+            } else {
+                document.getElementById('hint-btn').disabled = true;
+                document.getElementById('hint-btn').style.opacity = '0.5';
+            }
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, index) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'option';
+                optDiv.onclick = () => selectOption(index);
+                optDiv.innerHTML = `<div class="letter">${letters[index]}</div><div class="opt-text">${opt}</div>`;
+                optionsContainer.appendChild(optDiv);
+            });
+        }
+
+        function toggleTranslation() {
+            const transEl = document.getElementById('q-trans');
+            transEl.style.display = transEl.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function useHint() {
+            if (hintsLeft <= 0) return;
+            const q = currentQuiz[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            let incorrectIndices = [];
+            q.options.forEach((opt, idx) => {
+                if (idx !== q.answer && options[idx].style.opacity !== '0.3' && !options[idx].classList.contains('wrong') && !options[idx].classList.contains('correct')) {
+                    incorrectIndices.push(idx);
+                }
+            });
+            
+            if (incorrectIndices.length === 0) return;
+
+            incorrectIndices.sort(() => Math.random() - 0.5);
+            const toRemove = Math.min(2, incorrectIndices.length - (q.options.length <= 2 ? 0 : 0));
+            
+            let removedCount = 0;
+            for(let i=0; i<toRemove; i++) {
+                options[incorrectIndices[i]].style.opacity = '0.3';
+                options[incorrectIndices[i]].style.pointerEvents = 'none';
+                removedCount++;
+            }
+            
+            if (removedCount > 0) {
+                hintsLeft--;
+                document.getElementById('hint-count').innerText = hintsLeft;
+                if (hintsLeft === 0) {
+                    document.getElementById('hint-btn').disabled = true;
+                    document.getElementById('hint-btn').style.opacity = '0.5';
+                }
+            }
+        }
+
+        function readQuestion() {
+            const q = currentQuiz[currentQuestionIndex].q;
+            const utter = new SpeechSynthesisUtterance(q);
+            utter.lang = 'en-US';
+
+            // Try to find a female voice
+            const voices = speechSynthesis.getVoices();
+            const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Google US English'));
+            if (femaleVoice) utter.voice = femaleVoice;
+
+            speechSynthesis.speak(utter);
+        }
+
+        function selectOption(index) {
+            const options = document.querySelectorAll('.option');
+            options.forEach(o => o.style.pointerEvents = 'none');
+
+            const q = currentQuiz[currentQuestionIndex];
+            const isCorrect = index === q.answer;
+
+            userAnswers.push({
+                q: q.q,
+                selected: index,
+                correct: q.answer,
+                options: q.options
+            });
+
+            if (isCorrect) {
+                options[index].classList.add('correct');
+                score++;
+                
+                document.getElementById('next-btn').style.display = 'block';
+                
+                setTimeout(() => {
+                    const nxtBtn = document.getElementById('next-btn');
+                    if (nxtBtn.style.display !== 'none' && currentQuiz[currentQuestionIndex] === q) {
+                        handleNextClick();
+                    }
+                }, 1200);
+            } else {
+                options[index].classList.add('wrong');
+                options[q.answer].classList.add('correct');
+
+                document.getElementById('exp-text').innerText = q.exp;
+                document.getElementById('explanation').style.display = 'block';
+                document.getElementById('next-btn').style.display = 'block';
+            }
+            
+            document.getElementById('hint-btn').disabled = true;
+            document.getElementById('hint-btn').style.opacity = '0.5';
+        }
+
+        function handleNextClick() {
+            document.getElementById('next-btn').style.display = 'none';
+            currentQuestionIndex++;
+            window.speechSynthesis.cancel();
+            if (currentQuestionIndex < currentQuiz.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('progress').style.width = `100%`;
+
+            const total = currentQuiz.length;
+            const percentage = Math.round((score / total) * 100);
+
+            document.getElementById('score-text').innerText = `${percentage}%`;
+            document.getElementById('score-circle').style.background = `conic-gradient(var(--primary) ${percentage}%, var(--bg-color) 0%)`;
+
+            document.getElementById('total-q').innerText = total;
+            document.getElementById('correct-q').innerText = score;
+            document.getElementById('wrong-q').innerText = total - score;
+            
+            const mistakesContainer = document.getElementById('mistakes-container');
+            const mistakesList = document.getElementById('mistakes-list');
+            mistakesList.innerHTML = '';
+            
+            let mistakesCount = 0;
+            userAnswers.forEach((ans, i) => {
+                if (ans.selected !== ans.correct && mistakesCount < 5) {
+                    mistakesCount++;
+                    const li = document.createElement('li');
+                    li.style.marginBottom = '10px';
+                    li.style.direction = 'ltr';
+                    li.style.textAlign = 'left';
+                    li.innerHTML = `<strong>Q:</strong> ${ans.q}<br><span style="color: var(--wrong-text);">Your Answer: ${ans.options[ans.selected]}</span><br><span style="color: var(--correct-text);">Correct: ${ans.options[ans.correct]}</span>`;
+                    mistakesList.appendChild(li);
+                }
+            });
+            
+            if (mistakesCount > 0) {
+                mistakesContainer.style.display = 'block';
+            } else {
+                mistakesContainer.style.display = 'none';
+            }
+        }
+
+        function showReview() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('review-screen').style.display = 'block';
+
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            userAnswers.forEach((ans, i) => {
+                const isCorrect = ans.selected === ans.correct;
+                const item = document.createElement('div');
+                item.className = 'review-item';
+
+                item.innerHTML = `
+                    <div class="review-q">${i + 1}. ${ans.q}</div>
+                    <div class="review-ans wrong" style="display: ${!isCorrect ? 'flex' : 'none'}">
+                        <i class="fas fa-times-circle"></i> ${letters[ans.selected]}. ${ans.options[ans.selected]}
+                    </div>
+                    <div class="review-ans correct">
+                        <i class="fas fa-check-circle"></i> ${letters[ans.correct]}. ${ans.options[ans.correct]}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function resetApp() {
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('review-screen').style.display = 'none';
+            document.getElementById('home-screen').style.display = 'block';
+            window.speechSynthesis.cancel();
+        }
+
+        function shareResult() {
+            const card = document.getElementById('result-card');
+
+            // temporarily hide action buttons for screenshot
+            const actions = card.querySelector('.result-actions');
+            actions.style.display = 'none';
+
+            html2canvas(card, {
+                backgroundColor: getComputedStyle(document.body).getPropertyValue('--card-bg'),
+                scale: 2
+            }).then(canvas => {
+                actions.style.display = 'flex'; // restore buttons
+
+                const link = document.createElement('a');
+                link.download = 'QDU_Quiz_Result.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        // On load make sure speech voices load on some browsers
+        window.speechSynthesis.onvoiceschanged = function () {
+            window.speechSynthesis.getVoices();
+        };
+
+    </script>
+</body>
+
+</html>
